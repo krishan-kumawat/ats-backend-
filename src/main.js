@@ -23,6 +23,10 @@ async function bootstrap() {
     })
   );
 
+  // Enable global Prisma database exception handler filter
+  const { PrismaExceptionFilter } = await import('./common/filters/prisma-exception.filter.js');
+  app.useGlobalFilters(new PrismaExceptionFilter());
+
   // Setup Swagger API Documentation
   const { SwaggerModule, DocumentBuilder } = await import('@nestjs/swagger');
   const config = new DocumentBuilder()

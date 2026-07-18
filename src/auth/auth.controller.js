@@ -1,10 +1,21 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Req, Dependencies } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Req,
+  Dependencies,
+  UsePipes,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { RefreshTokenDto } from './dto/refresh.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { Public } from '../common/decorators/public.decorator.js';
+import { CustomValidationPipe } from '../common/pipes/custom-validation.pipe.js';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -17,9 +28,7 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'User login' })
-  @ApiResponse({ status: 200, description: 'Successful login. Access and Refresh tokens returned.' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials.' })
+  @UsePipes(new CustomValidationPipe(LoginDto))
   login(@Body() loginDto) {
     return this.authService.login(loginDto.email, loginDto.password);
   }
@@ -27,9 +36,7 @@ export class AuthController {
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Rotate access/refresh tokens' })
-  @ApiResponse({ status: 200, description: 'Tokens successfully rotated.' })
-  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token.' })
+  @UsePipes(new CustomValidationPipe(RefreshTokenDto))
   refresh(@Body() refreshTokenDto) {
     return this.authService.refresh(refreshTokenDto.refreshToken);
   }

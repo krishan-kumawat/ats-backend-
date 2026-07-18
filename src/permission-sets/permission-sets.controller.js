@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Dependencies,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { PermissionSetsService } from './permission-sets.service.js';
@@ -32,8 +33,8 @@ export class PermissionSetsController {
   @ApiOperation({ summary: 'Create a new permission set' })
   @ApiResponse({ status: 201, description: 'Permission set successfully created.' })
   @ApiResponse({ status: 409, description: 'Permission set name already exists.' })
-  create(@Body() createPermissionSetDto) {
-    return this.permissionSetsService.create(createPermissionSetDto);
+  create(@Body() createPermissionSetDto, @Req() request) {
+    return this.permissionSetsService.create(createPermissionSetDto, request.user.sub);
   }
 
   @Get()
@@ -58,8 +59,8 @@ export class PermissionSetsController {
   @ApiOperation({ summary: 'Update permission set details' })
   @ApiResponse({ status: 200, description: 'Permission set updated.' })
   @ApiResponse({ status: 404, description: 'Permission set not found.' })
-  update(@Param('id') id, @Body() updatePermissionSetDto) {
-    return this.permissionSetsService.update(id, updatePermissionSetDto);
+  update(@Param('id') id, @Body() updatePermissionSetDto, @Req() request) {
+    return this.permissionSetsService.update(id, updatePermissionSetDto, request.user.sub);
   }
 
   @Delete(':id')

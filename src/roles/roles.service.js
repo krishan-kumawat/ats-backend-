@@ -8,7 +8,7 @@ export class RolesService {
     this.rolesRepository = rolesRepository;
   }
 
-  async create(createRoleDto) {
+  async create(createRoleDto, creatorId) {
     const existing = await this.rolesRepository.findByName(createRoleDto.name);
     if (existing) {
       throw new ConflictException(`Role with name '${createRoleDto.name}' already exists`);
@@ -21,7 +21,11 @@ export class RolesService {
       }
     }
 
-    return this.rolesRepository.create(createRoleDto);
+    return this.rolesRepository.create({
+      ...createRoleDto,
+      createdById: creatorId,
+      lastModifiedById: creatorId,
+    });
   }
 
   async findAll() {
@@ -36,7 +40,7 @@ export class RolesService {
     return role;
   }
 
-  async update(id, updateRoleDto) {
+  async update(id, updateRoleDto, modifierId) {
     await this.findOne(id);
     
     if (updateRoleDto.parentId) {
@@ -49,7 +53,10 @@ export class RolesService {
       }
     }
     
-    return this.rolesRepository.update(id, updateRoleDto);
+    return this.rolesRepository.update(id, {
+      ...updateRoleDto,
+      lastModifiedById: modifierId,
+    });
   }
 
   async remove(id) {

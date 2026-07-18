@@ -13,6 +13,7 @@ import { SharingModule } from './sharing/sharing.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
 import { CandidatesModule } from './candidates/candidates.module.js';
 import { AuditModule } from './audit/audit.module.js';
+import { DepartmentsModule } from './departments/departments.module.js';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AuditModule } from './audit/audit.module.js';
     JobsModule,
     CandidatesModule,
     AuditModule,
+    DepartmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

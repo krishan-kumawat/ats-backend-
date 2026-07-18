@@ -8,12 +8,16 @@ export class PermissionSetsService {
     this.permissionSetsRepository = permissionSetsRepository;
   }
 
-  async create(createPermissionSetDto) {
+  async create(createPermissionSetDto, creatorId) {
     const existing = await this.permissionSetsRepository.findByName(createPermissionSetDto.name);
     if (existing) {
       throw new ConflictException(`Permission set with name '${createPermissionSetDto.name}' already exists`);
     }
-    return this.permissionSetsRepository.create(createPermissionSetDto);
+    return this.permissionSetsRepository.create({
+      ...createPermissionSetDto,
+      createdById: creatorId,
+      lastModifiedById: creatorId,
+    });
   }
 
   async findAll() {
@@ -28,9 +32,12 @@ export class PermissionSetsService {
     return permSet;
   }
 
-  async update(id, updatePermissionSetDto) {
+  async update(id, updatePermissionSetDto, modifierId) {
     await this.findOne(id);
-    return this.permissionSetsRepository.update(id, updatePermissionSetDto);
+    return this.permissionSetsRepository.update(id, {
+      ...updatePermissionSetDto,
+      lastModifiedById: modifierId,
+    });
   }
 
   async remove(id) {

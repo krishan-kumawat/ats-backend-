@@ -30,6 +30,8 @@ async function main() {
     { module: 'Identity', resource: 'PermissionSet', action: 'Read', code: 'identity:permissionset:read' },
     { module: 'Identity', resource: 'User', action: 'Write', code: 'identity:user:write' },
     { module: 'Identity', resource: 'User', action: 'Read', code: 'identity:user:read' },
+    { module: 'Identity', resource: 'Department', action: 'Write', code: 'identity:department:write' },
+    { module: 'Identity', resource: 'Department', action: 'Read', code: 'identity:department:read' },
     
     // Recruitment Permissions
     { module: 'Recruitment', resource: 'Job', action: 'Write', code: 'recruitment:job:write' },
@@ -103,6 +105,7 @@ async function main() {
     'recruitment:job:read',
     'recruitment:candidate:write',
     'recruitment:candidate:read',
+    'identity:department:read',
   ];
   await prisma.profilePermission.deleteMany({ where: { profileId: recruiterProfile.id } });
   await prisma.profilePermission.createMany({
@@ -113,7 +116,11 @@ async function main() {
   });
 
   // Hiring Manager Profile gets Recruitment Read-Only
-  const hmPermCodes = ['recruitment:job:read', 'recruitment:candidate:read'];
+  const hmPermCodes = [
+    'recruitment:job:read',
+    'recruitment:candidate:read',
+    'identity:department:read',
+  ];
   await prisma.profilePermission.deleteMany({ where: { profileId: hiringManagerProfile.id } });
   await prisma.profilePermission.createMany({
     data: getPermIdsByCodes(hmPermCodes).map((pid) => ({

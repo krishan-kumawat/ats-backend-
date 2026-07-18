@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Dependencies,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { RolesService } from './roles.service.js';
@@ -31,8 +32,8 @@ export class RolesController {
   @ApiOperation({ summary: 'Create a new structural role for hierarchy' })
   @ApiResponse({ status: 201, description: 'Role successfully created.' })
   @ApiResponse({ status: 409, description: 'Role name already exists.' })
-  create(@Body() createRoleDto) {
-    return this.rolesService.create(createRoleDto);
+  create(@Body() createRoleDto, @Req() request) {
+    return this.rolesService.create(createRoleDto, request.user.sub);
   }
 
   @Get()
@@ -57,8 +58,8 @@ export class RolesController {
   @ApiOperation({ summary: 'Update role details' })
   @ApiResponse({ status: 200, description: 'Role details updated.' })
   @ApiResponse({ status: 404, description: 'Role not found.' })
-  update(@Param('id') id, @Body() updateRoleDto) {
-    return this.rolesService.update(id, updateRoleDto);
+  update(@Param('id') id, @Body() updateRoleDto, @Req() request) {
+    return this.rolesService.update(id, updateRoleDto, request.user.sub);
   }
 
   @Delete(':id')

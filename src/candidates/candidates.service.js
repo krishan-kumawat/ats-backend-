@@ -14,6 +14,8 @@ export class CandidatesService {
     return this.candidatesRepository.create({
       ...createCandidateDto,
       ownerId,
+      createdById: ownerId,
+      lastModifiedById: ownerId,
     });
   }
 
@@ -29,9 +31,12 @@ export class CandidatesService {
     return candidate;
   }
 
-  async update(id, updateCandidateDto) {
+  async update(id, updateCandidateDto, modifierId) {
     await this.findOne(id);
-    return this.candidatesRepository.update(id, updateCandidateDto);
+    return this.candidatesRepository.update(id, {
+      ...updateCandidateDto,
+      lastModifiedById: modifierId,
+    });
   }
 
   async remove(id) {
@@ -39,11 +44,11 @@ export class CandidatesService {
     return this.candidatesRepository.softDelete(id);
   }
 
-  async linkToJob(candidateId, jobId, status) {
+  async linkToJob(candidateId, jobId, status, modifierId) {
     await this.findOne(candidateId);
     
-    // Link candidate to job in DB
-    const link = await this.candidatesRepository.linkToJob(candidateId, jobId, status);
+    // Link candidate to job in DB with modifier tracking
+    const link = await this.candidatesRepository.linkToJob(candidateId, jobId, status, modifierId);
 
     // Run sharing cascade calculation synchronously
     await this.sharingService.handleCandidateJobLinked(candidateId, jobId);

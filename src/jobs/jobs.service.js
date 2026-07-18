@@ -12,6 +12,8 @@ export class JobsService {
     return this.jobsRepository.create({
       ...createJobDto,
       ownerId,
+      createdById: ownerId,
+      lastModifiedById: ownerId,
       status: 'Draft',
     });
   }
@@ -28,9 +30,12 @@ export class JobsService {
     return job;
   }
 
-  async update(id, updateJobDto) {
+  async update(id, updateJobDto, modifierId) {
     await this.findOne(id);
-    return this.jobsRepository.update(id, updateJobDto);
+    return this.jobsRepository.update(id, {
+      ...updateJobDto,
+      lastModifiedById: modifierId,
+    });
   }
 
   async remove(id) {

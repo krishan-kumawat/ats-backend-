@@ -64,8 +64,8 @@ export class CandidatesController {
   @ApiResponse({ status: 200, description: 'Candidate updated.' })
   @ApiResponse({ status: 403, description: 'Forbidden. No edit access.' })
   @ApiResponse({ status: 404, description: 'Candidate not found.' })
-  update(@Param('id') id, @Body() updateCandidateDto) {
-    return this.candidatesService.update(id, updateCandidateDto);
+  update(@Param('id') id, @Body() updateCandidateDto, @Req() request) {
+    return this.candidatesService.update(id, updateCandidateDto, request.user.sub);
   }
 
   @Delete(':id')
@@ -86,7 +86,7 @@ export class CandidatesController {
   @ApiResponse({ status: 201, description: 'Candidate linked to job successfully.' })
   @ApiResponse({ status: 403, description: 'Forbidden. No edit access.' })
   @ApiResponse({ status: 404, description: 'Candidate or Job not found.' })
-  linkToJob(@Param('id') id, @Body() assignJobDto) {
-    return this.candidatesService.linkToJob(id, assignJobDto.jobId, assignJobDto.status);
+  linkToJob(@Param('id') id, @Body() assignJobDto, @Req() request) {
+    return this.candidatesService.linkToJob(id, assignJobDto.jobId, assignJobDto.status, request.user.sub);
   }
 }

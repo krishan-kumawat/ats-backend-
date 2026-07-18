@@ -100,7 +100,7 @@ export class CandidatesRepository {
     });
   }
 
-  async linkToJob(candidateId, jobId, status = 'Applied') {
+  async linkToJob(candidateId, jobId, status = 'Applied', modifierId) {
     return this.prismaService.candidateJob.upsert({
       where: {
         candidateId_jobId: {
@@ -112,9 +112,12 @@ export class CandidatesRepository {
         candidateId,
         jobId,
         status,
+        createdById: modifierId,
+        lastModifiedById: modifierId,
       },
       update: {
         status,
+        lastModifiedById: modifierId,
         deletedAt: null, // restore if soft deleted
       },
     });

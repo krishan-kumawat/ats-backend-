@@ -19,6 +19,12 @@ model Department {
   users    User[]
   jobs     Job[]
 
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("DepartmentCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("DepartmentLastModifiedBy", fields: [lastModifiedById], references: [id])
+
   @@map("departments")
 }
 
@@ -34,6 +40,12 @@ model Role {
   children Role[] @relation("RoleHierarchy")
   users    User[]
 
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("RoleCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("RoleLastModifiedBy", fields: [lastModifiedById], references: [id])
+
   @@map("roles")
 }
 
@@ -46,6 +58,12 @@ model Profile {
   deletedAt          DateTime?           @map("deleted_at") @db.Timestamp(6)
   profilePermissions ProfilePermission[]
   users              User[]
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("ProfileCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("ProfileLastModifiedBy", fields: [lastModifiedById], references: [id])
 
   @@map("profiles")
 }
@@ -85,6 +103,12 @@ model PermissionSet {
   deletedAt          DateTime?                 @map("deleted_at") @db.Timestamp(6)
   permissionSetPerms PermissionSetPermission[]
   userPermissionSets UserPermissionSet[]
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("PermissionSetCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("PermissionSetLastModifiedBy", fields: [lastModifiedById], references: [id])
 
   @@map("permission_sets")
 }
@@ -126,6 +150,30 @@ model User {
   resourceAccesses   UserResourceAccess[]
   auditLogs          AuditLog[]
 
+  // Auditing Self-reference
+  createdUsers      User[]    @relation("UserCreatedBy")
+  lastModifiedUsers User[]    @relation("UserLastModifiedBy")
+  creator           User?     @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdById       String?   @map("created_by_id") @db.Uuid
+  updater           User?     @relation("UserLastModifiedBy", fields: [lastModifiedById], references: [id])
+  lastModifiedById  String?   @map("last_modified_by_id") @db.Uuid
+
+  // Auditing lookups from other tables
+  createdDepartments      Department[]    @relation("DepartmentCreatedBy")
+  lastModifiedDepartments Department[]    @relation("DepartmentLastModifiedBy")
+  createdRoles            Role[]          @relation("RoleCreatedBy")
+  lastModifiedRoles       Role[]          @relation("RoleLastModifiedBy")
+  createdProfiles         Profile[]       @relation("ProfileCreatedBy")
+  lastModifiedProfiles    Profile[]       @relation("ProfileLastModifiedBy")
+  createdPermissionSets   PermissionSet[] @relation("PermissionSetCreatedBy")
+  lastModifiedPermSets    PermissionSet[] @relation("PermissionSetLastModifiedBy")
+  createdJobs             Job[]           @relation("JobCreatedBy")
+  lastModifiedJobs        Job[]           @relation("JobLastModifiedBy")
+  createdCandidates       Candidate[]     @relation("CandidateCreatedBy")
+  lastModifiedCandidates  Candidate[]     @relation("CandidateLastModifiedBy")
+  createdCandidateJobs    CandidateJob[]  @relation("CandidateJobCreatedBy")
+  lastModifiedCandJobs    CandidateJob[]  @relation("CandidateJobLastModifiedBy")
+
   @@map("users")
 }
 
@@ -156,6 +204,12 @@ model Job {
   owner         User           @relation("JobOwner", fields: [ownerId], references: [id])
   candidateJobs CandidateJob[]
 
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("JobCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("JobLastModifiedBy", fields: [lastModifiedById], references: [id])
+
   @@map("jobs")
 }
 
@@ -173,6 +227,12 @@ model Candidate {
   owner         User           @relation("CandidateOwner", fields: [ownerId], references: [id])
   candidateJobs CandidateJob[]
 
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("CandidateCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("CandidateLastModifiedBy", fields: [lastModifiedById], references: [id])
+
   @@map("candidates")
 }
 
@@ -186,6 +246,12 @@ model CandidateJob {
 
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("CandidateJobCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("CandidateJobLastModifiedBy", fields: [lastModifiedById], references: [id])
 
   @@id([candidateId, jobId])
   @@map("candidate_jobs")

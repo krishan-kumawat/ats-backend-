@@ -63,8 +63,8 @@ export class JobsController {
   @ApiResponse({ status: 200, description: 'Job updated.' })
   @ApiResponse({ status: 403, description: 'Forbidden. No edit access.' })
   @ApiResponse({ status: 404, description: 'Job not found.' })
-  update(@Param('id') id, @Body() updateJobDto) {
-    return this.jobsService.update(id, updateJobDto);
+  update(@Param('id') id, @Body() updateJobDto, @Req() request) {
+    return this.jobsService.update(id, updateJobDto, request.user.sub);
   }
 
   @Delete(':id')

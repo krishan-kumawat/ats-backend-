@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsNotEmpty, IsOptional, IsUUID, MinLength } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, IsOptional, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
@@ -24,30 +24,30 @@ export class CreateUserDto {
   lastName;
 
   @ApiProperty({
-    description: 'The department UUID (optional)',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'The department name (optional)',
+    example: 'HR',
     required: false,
   })
-  @IsUUID()
+  @IsString()
   @IsOptional()
-  departmentId;
+  departmentName;
 
   @ApiProperty({
-    description: 'The hierarchical role UUID (optional)',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'The hierarchical role name (optional)',
+    example: 'Recruiter',
     required: false,
   })
-  @IsUUID()
+  @IsString()
   @IsOptional()
-  roleId;
+  roleName;
 
   @ApiProperty({
-    description: 'The baseline profile UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'The baseline profile name (e.g. Admin, Recruiter, Hiring Manager)',
+    example: 'Recruiter',
   })
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
-  profileId;
+  profileName;
 }
 
 export class UpdateUserDto {
@@ -73,29 +73,29 @@ export class UpdateUserDto {
   lastName;
 
   @ApiProperty({
-    description: 'Department UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'Department name',
+    example: 'HR',
     required: false,
   })
-  @IsUUID()
+  @IsString()
   @IsOptional()
-  departmentId;
+  departmentName;
 
   @ApiProperty({
-    description: 'Hierarchical role UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'Hierarchical role name',
+    example: 'Recruiter',
     required: false,
   })
-  @IsUUID()
+  @IsString()
   @IsOptional()
-  roleId;
+  roleName;
 
   @ApiProperty({
-    description: 'Baseline profile UUID',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'Baseline profile name',
+    example: 'Recruiter',
     required: false,
   })
-  @IsUUID()
+  @IsString()
   @IsOptional()
-  profileId;
+  profileName;
 }

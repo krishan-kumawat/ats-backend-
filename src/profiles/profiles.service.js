@@ -8,12 +8,16 @@ export class ProfilesService {
     this.profilesRepository = profilesRepository;
   }
 
-  async create(createProfileDto) {
+  async create(createProfileDto, creatorId) {
     const existing = await this.profilesRepository.findByName(createProfileDto.name);
     if (existing) {
       throw new ConflictException(`Profile with name '${createProfileDto.name}' already exists`);
     }
-    return this.profilesRepository.create(createProfileDto);
+    return this.profilesRepository.create({
+      ...createProfileDto,
+      createdById: creatorId,
+      lastModifiedById: creatorId,
+    });
   }
 
   async findAll() {
@@ -28,9 +32,12 @@ export class ProfilesService {
     return profile;
   }
 
-  async update(id, updateProfileDto) {
+  async update(id, updateProfileDto, modifierId) {
     await this.findOne(id);
-    return this.profilesRepository.update(id, updateProfileDto);
+    return this.profilesRepository.update(id, {
+      ...updateProfileDto,
+      lastModifiedById: modifierId,
+    });
   }
 
   async remove(id) {

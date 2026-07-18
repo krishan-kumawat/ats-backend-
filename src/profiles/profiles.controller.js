@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Dependencies,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ProfilesService } from './profiles.service.js';
@@ -33,8 +34,8 @@ export class ProfilesController {
   @ApiResponse({ status: 201, description: 'Profile successfully created.' })
   @ApiResponse({ status: 400, description: 'Invalid input data.' })
   @ApiResponse({ status: 409, description: 'Profile name already exists.' })
-  create(@Body() createProfileDto) {
-    return this.profilesService.create(createProfileDto);
+  create(@Body() createProfileDto, @Req() request) {
+    return this.profilesService.create(createProfileDto, request.user.sub);
   }
 
   @Get()
@@ -59,8 +60,8 @@ export class ProfilesController {
   @ApiOperation({ summary: 'Update profile details' })
   @ApiResponse({ status: 200, description: 'Profile details updated.' })
   @ApiResponse({ status: 404, description: 'Profile not found.' })
-  update(@Param('id') id, @Body() updateProfileDto) {
-    return this.profilesService.update(id, updateProfileDto);
+  update(@Param('id') id, @Body() updateProfileDto, @Req() request) {
+    return this.profilesService.update(id, updateProfileDto, request.user.sub);
   }
 
   @Delete(':id')

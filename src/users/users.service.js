@@ -12,6 +12,15 @@ export class UsersService {
     this.prismaService = prismaService;
   }
 
+  // Helper method to strip sensitive credentials before returning records to API boundary
+  sanitizeUser(user) {
+    if (!user) return null;
+    const sanitized = { ...user };
+    delete sanitized.passwordHash;
+    delete sanitized.refreshTokenHash;
+    return sanitized;
+  }
+
   async create(createUserDto, creatorId) {
     const existing = await this.usersRepository.findByEmail(createUserDto.email);
     if (existing) {
@@ -52,7 +61,7 @@ export class UsersService {
 
     const passwordHash = await this.bcryptService.hash(createUserDto.password);
     
-    return this.usersRepository.create({
+    const user = await this.usersRepository.create({
       email: createUserDto.email,
       passwordHash,
       firstName: createUserDto.firstName,
@@ -63,10 +72,34 @@ export class UsersService {
       createdById: creatorId,
       lastModifiedById: creatorId,
     });
+
+    return this.sanitizeUser(user);
   }
 
-  async findAll() {
-    return this.usersRepository.findAll();
+  async findAll(page = 1, limit = 10, search = "", profileName = "") {
+    const p = Math.max(1, Number(page || 1));
+    const l = Math.max(1, Number(limit || 10));
+    const skip = (p - 1) * l;
+    const { users, total } = await this.usersRepository.findAll(skip, l, search, profileName);
+
+    // Compute profile counts for statistics
+    const allActive = await this.prismaService.user.findMany({
+      where: { deletedAt: null },
+      select: { profile: { select: { name: true } } },
+    });
+    const profileCounts = {};
+    for (const u of allActive) {
+      const name = u.profile?.name || "";
+      profileCounts[name] = (profileCounts[name] || 0) + 1;
+    }
+
+    return {
+      data: users.map((u) => this.sanitizeUser(u)),
+      total,
+      page: p,
+      limit: l,
+      profileCounts,
+    };
   }
 
   async findOne(id) {
@@ -74,7 +107,7 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException(`User with ID '${id}' not found`);
     }
-    return user;
+    return this.sanitizeUser(user);
   }
 
   async update(id, updateUserDto, modifierId) {
@@ -122,12 +155,14 @@ export class UsersService {
 
     updateData.lastModifiedById = modifierId;
 
-    return this.usersRepository.update(id, updateData);
+    const updatedUser = await this.usersRepository.update(id, updateData);
+    return this.sanitizeUser(updatedUser);
   }
 
   async remove(id) {
     await this.findOne(id);
-    return this.usersRepository.softDelete(id);
+    const deletedUser = await this.usersRepository.softDelete(id);
+    return this.sanitizeUser(deletedUser);
   }
 
   async assignPermissionSets(userId, permissionSetIds) {

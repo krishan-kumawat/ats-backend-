@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCandidateDto {
@@ -21,6 +21,12 @@ export class CreateCandidateDto {
   @IsString()
   @IsOptional()
   phone;
+
+  @ApiProperty({ description: 'Array of candidate skills tags', type: [String], required: false })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  skills;
 }
 
 export class UpdateCandidateDto {
@@ -43,4 +49,10 @@ export class UpdateCandidateDto {
   @IsString()
   @IsOptional()
   phone;
+
+  @ApiProperty({ description: 'Array of candidate skills tags', type: [String], required: false })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  skills;
 }

@@ -14,6 +14,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { CandidatesService } from './candidates.service.js';
 import { CreateCandidateDto, UpdateCandidateDto } from './dto/create-candidate.dto.js';
 import { AssignJobDto } from './dto/assign-job.dto.js';
+import { UpdateJobLinkDto } from './dto/update-job-link.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from '../common/guards/permissions.guard.js';
 import { RecordSharingGuard } from '../common/guards/record-sharing.guard.js';
@@ -50,7 +51,7 @@ export class CandidatesController {
   @RequirePermissions('recruitment:candidate:read')
   @RequireRecordAccess('Candidate', 'READ', 'id')
   @ApiOperation({ summary: 'Get details of a candidate by ID' })
-  @ApiResponse({ status: 200, description: 'Candidate details returned.' })
+  @ApiResponse({ status: 200, description: 'Job details returned.' })
   @ApiResponse({ status: 403, description: 'Forbidden. No access to this candidate.' })
   @ApiResponse({ status: 404, description: 'Candidate not found.' })
   findOne(@Param('id') id) {
@@ -88,5 +89,21 @@ export class CandidatesController {
   @ApiResponse({ status: 404, description: 'Candidate or Job not found.' })
   linkToJob(@Param('id') id, @Body() assignJobDto, @Req() request) {
     return this.candidatesService.linkToJob(id, assignJobDto.jobId, assignJobDto.status, request.user.sub);
+  }
+
+  @Patch(':id/jobs/:jobId')
+  @RequirePermissions('recruitment:candidate:write')
+  @RequireRecordAccess('Candidate', 'EDIT', 'id')
+  @ApiOperation({ summary: 'Update candidate job link details (status, scorecards, approvals)' })
+  @ApiResponse({ status: 200, description: 'Candidate job details updated successfully.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. No edit access.' })
+  @ApiResponse({ status: 404, description: 'Candidate or Job not found.' })
+  updateJobLink(
+    @Param('id') id,
+    @Param('jobId') jobId,
+    @Body() updateJobLinkDto,
+    @Req() request,
+  ) {
+    return this.candidatesService.updateJobLink(id, jobId, updateJobLinkDto, request.user.sub);
   }
 }

@@ -15,6 +15,44 @@ export class SharingService {
     this.prismaService = prismaService;
   }
 
+  async findAllRules() {
+    const shares = await this.prismaService.resourceShare.findMany({
+      include: {
+        sharedTo: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            profile: true,
+          },
+        },
+        sharedBy: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    const jobIds = shares.filter((s) => s.resourceType === 'Job').map((s) => s.resourceId);
+    const jobs = await this.prismaService.job.findMany({
+      where: { id: { in: jobIds } },
+      include: { department: true },
+    });
+    const jobsMap = new Map(jobs.map((j) => [j.id, j]));
+
+    return shares.map((s) => {
+      const job = s.resourceType === 'Job' ? jobsMap.get(s.resourceId) : null;
+      return {
+        ...s,
+        job: job ? { title: job.title, department: job.department?.name || 'Unassigned' } : null,
+      };
+    });
+  }
+
   async share(shareResourceDto, sharedById, userProfile) {
     const { resourceType, resourceId, sharedToId, accessLevel, cascadeToChildren } =
       shareResourceDto;

@@ -32,7 +32,7 @@ export class PermissionsGuard {
       return true;
     }
 
-    const permissions = await this.getUserPermissions(user.id);
+    const permissions = await this.getUserPermissions(user.sub);
     return requiredPermissions.every((perm) => permissions.includes(perm));
   }
 

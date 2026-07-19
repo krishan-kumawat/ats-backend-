@@ -220,6 +220,7 @@ model Candidate {
   email     String    @unique @db.VarChar(255)
   phone     String?   @db.VarChar(50)
   ownerId   String    @map("owner_id") @db.Uuid
+  skills    String[]  @default([])
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamp(6)
@@ -237,12 +238,24 @@ model Candidate {
 }
 
 model CandidateJob {
-  candidateId String    @map("candidate_id") @db.Uuid
-  jobId       String    @map("job_id") @db.Uuid
-  status      String    @db.VarChar(50) // 'Applied', 'Screening', 'Interviewing', 'Offered', 'Rejected'
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamp(6)
+  candidateId    String    @map("candidate_id") @db.Uuid
+  jobId          String    @map("job_id") @db.Uuid
+  status         String    @db.VarChar(50) // 'Applied', 'Screening', 'Interviewing', 'Offered', 'Rejected'
+  expectedSalary Decimal?  @map("expected_salary") @db.Decimal(12, 2)
+  proposedSalary Decimal?  @map("proposed_salary") @db.Decimal(12, 2)
+  proposedEquity Decimal?  @map("proposed_equity") @db.Decimal(12, 2)
+  sourceTag      String?   @map("source_tag") @db.VarChar(100)
+  technicalScore Int?      @map("technical_score")
+  systemScore    Int?      @map("system_score")
+  cultureScore   Int?      @map("culture_score")
+  pros           String?   @map("pros") @db.Text
+  cons           String?   @map("cons") @db.Text
+  recommendation String?   @map("recommendation") @db.VarChar(50)
+  approvalStatus String?   @map("approval_status") @db.VarChar(50)
+  approvalFeedback String? @map("approval_feedback") @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamp(6)
 
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)

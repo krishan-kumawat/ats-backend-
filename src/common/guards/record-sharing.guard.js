@@ -42,14 +42,14 @@ export class RecordSharingGuard {
     }
 
     // 2. Record Owner check
-    const isOwner = await this.checkRecordOwnership(user.id, resourceType, recordId);
+    const isOwner = await this.checkRecordOwnership(user.sub, resourceType, recordId);
     if (isOwner) {
       return true;
     }
 
     // 3. Shared access check (Direct/Inherited via user_resource_access)
     const hasSharedAccess = await this.checkSharedAccess(
-      user.id,
+      user.sub,
       resourceType,
       recordId,
       accessLevel

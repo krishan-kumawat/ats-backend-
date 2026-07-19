@@ -55,4 +55,9 @@ export class CandidatesService {
 
     return link;
   }
+
+  async updateJobLink(candidateId, jobId, updateDto, modifierId) {
+    await this.findOne(candidateId);
+    return this.candidatesRepository.updateJobLink(candidateId, jobId, updateDto, modifierId);
+  }
 }

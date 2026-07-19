@@ -12,18 +12,39 @@ export class UsersRepository {
     return this.prismaService.user.create({ data });
   }
 
-  async findAll() {
-    return this.prismaService.user.findMany({
-      where: { deletedAt: null },
-      include: {
-        department: true,
-        role: true,
-        profile: true,
-        userPermissionSets: {
-          include: { permissionSet: true },
+  async findAll(skip, take, search, profileName) {
+    const where = { deletedAt: null };
+    if (profileName && profileName !== "all") {
+      where.profile = { name: profileName };
+    }
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: "insensitive" } },
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [users, total] = await this.prismaService.$transaction([
+      this.prismaService.user.findMany({
+        where,
+        skip: skip !== undefined ? Number(skip) : undefined,
+        take: take !== undefined ? Number(take) : undefined,
+        orderBy: { createdAt: "desc" },
+        include: {
+          department: true,
+          role: true,
+          profile: true,
+          userPermissionSets: {
+            include: { permissionSet: true },
+          },
         },
-      },
-    });
+      }),
+      this.prismaService.user.count({
+        where,
+      }),
+    ]);
+    return { users, total };
   }
 
   async findById(id) {

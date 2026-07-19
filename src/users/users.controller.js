@@ -9,6 +9,7 @@ import {
   UseGuards,
   Dependencies,
   Req,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service.js';
@@ -41,8 +42,13 @@ export class UsersController {
   @RequirePermissions('identity:user:read')
   @ApiOperation({ summary: 'Retrieve all active users' })
   @ApiResponse({ status: 200, description: 'User list returned successfully.' })
-  findAll() {
-    return this.usersService.findAll();
+  findAll(
+    @Query("page") page,
+    @Query("limit") limit,
+    @Query("search") search,
+    @Query("profile") profile
+  ) {
+    return this.usersService.findAll(page, limit, search, profile);
   }
 
   @Get(':id')

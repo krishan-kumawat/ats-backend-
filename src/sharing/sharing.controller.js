@@ -25,6 +25,13 @@ export class SharingController {
     this.sharingService = sharingService;
   }
 
+  @Get()
+  @ApiOperation({ summary: 'List all system resource sharing rules (assignments)' })
+  @ApiResponse({ status: 200, description: 'All sharing rules returned.' })
+  findAllRules() {
+    return this.sharingService.findAllRules();
+  }
+
   @Post('share')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Share a resource (Job/Candidate) with a user' })

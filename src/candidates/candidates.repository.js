@@ -122,4 +122,19 @@ export class CandidatesRepository {
       },
     });
   }
+
+  async updateJobLink(candidateId, jobId, data, modifierId) {
+    return this.prismaService.candidateJob.update({
+      where: {
+        candidateId_jobId: {
+          candidateId,
+          jobId,
+        },
+      },
+      data: {
+        ...data,
+        lastModifiedById: modifierId,
+      },
+    });
+  }
 }

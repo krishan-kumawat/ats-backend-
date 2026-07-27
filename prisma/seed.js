@@ -20,8 +20,10 @@ async function main() {
   // 1. Seed Permissions
   const permissions = [
     // Identity Management Permissions
-    { module: 'Identity', resource: 'Profile', action: 'Write', code: 'identity:profile:write' },
+    { module: 'Identity', resource: 'Profile', action: 'Create', code: 'identity:profile:create' },
     { module: 'Identity', resource: 'Profile', action: 'Read', code: 'identity:profile:read' },
+    { module: 'Identity', resource: 'Profile', action: 'Update', code: 'identity:profile:update' },
+    { module: 'Identity', resource: 'Profile', action: 'Delete', code: 'identity:profile:delete' },
     { module: 'Identity', resource: 'Role', action: 'Write', code: 'identity:role:write' },
     { module: 'Identity', resource: 'Role', action: 'Read', code: 'identity:role:read' },
     { module: 'Identity', resource: 'Permission', action: 'Write', code: 'identity:permission:write' },
@@ -33,11 +35,15 @@ async function main() {
     { module: 'Identity', resource: 'Department', action: 'Write', code: 'identity:department:write' },
     { module: 'Identity', resource: 'Department', action: 'Read', code: 'identity:department:read' },
     
-    // Recruitment Permissions
-    { module: 'Recruitment', resource: 'Job', action: 'Write', code: 'recruitment:job:write' },
+    // Recruitment CRUD Permissions
+    { module: 'Recruitment', resource: 'Job', action: 'Create', code: 'recruitment:job:create' },
     { module: 'Recruitment', resource: 'Job', action: 'Read', code: 'recruitment:job:read' },
-    { module: 'Recruitment', resource: 'Candidate', action: 'Write', code: 'recruitment:candidate:write' },
+    { module: 'Recruitment', resource: 'Job', action: 'Update', code: 'recruitment:job:update' },
+    { module: 'Recruitment', resource: 'Job', action: 'Delete', code: 'recruitment:job:delete' },
+    { module: 'Recruitment', resource: 'Candidate', action: 'Create', code: 'recruitment:candidate:create' },
     { module: 'Recruitment', resource: 'Candidate', action: 'Read', code: 'recruitment:candidate:read' },
+    { module: 'Recruitment', resource: 'Candidate', action: 'Update', code: 'recruitment:candidate:update' },
+    { module: 'Recruitment', resource: 'Candidate', action: 'Delete', code: 'recruitment:candidate:delete' },
     
     // System Permissions
     { module: 'System', resource: 'Audit', action: 'Read', code: 'system:audit:read' },
@@ -92,54 +98,59 @@ async function main() {
   
   // Admin Profile gets all permissions
   await prisma.profilePermission.deleteMany({ where: { profileId: adminProfile.id } });
-  await prisma.profilePermission.createMany({
-    data: seededPermissions.map((p) => ({
-      profileId: adminProfile.id,
-      permissionId: p.id,
-    })),
-  });
+  for (const perm of seededPermissions) {
+    await prisma.profilePermission.create({
+      data: { profileId: adminProfile.id, permissionId: perm.id },
+    });
+  }
 
-  // Recruiter Profile gets Recruitment Write/Read permissions
-  const recruiterPermCodes = [
-    'recruitment:job:write',
-    'recruitment:job:read',
-    'recruitment:candidate:write',
-    'recruitment:candidate:read',
-    'identity:department:read',
-  ];
+  // Recruiter Profile Permissions
   await prisma.profilePermission.deleteMany({ where: { profileId: recruiterProfile.id } });
-  await prisma.profilePermission.createMany({
-    data: getPermIdsByCodes(recruiterPermCodes).map((pid) => ({
-      profileId: recruiterProfile.id,
-      permissionId: pid,
-    })),
-  });
+  const recruiterPermCodes = [
+    'recruitment:job:read',
+    'recruitment:job:create',
+    'recruitment:job:update',
+    'recruitment:candidate:read',
+    'recruitment:candidate:create',
+    'recruitment:candidate:update',
+    'identity:profile:read',
+  ];
+  for (const permId of getPermIdsByCodes(recruiterPermCodes)) {
+    await prisma.profilePermission.create({
+      data: { profileId: recruiterProfile.id, permissionId: permId },
+    });
+  }
 
-  // Hiring Manager Profile gets Recruitment Read-Only
+  // Hiring Manager Profile Permissions
+  await prisma.profilePermission.deleteMany({ where: { profileId: hiringManagerProfile.id } });
   const hmPermCodes = [
     'recruitment:job:read',
     'recruitment:candidate:read',
-    'identity:department:read',
+    'recruitment:candidate:update', // HM can review scorecards
+    'identity:profile:read',
   ];
-  await prisma.profilePermission.deleteMany({ where: { profileId: hiringManagerProfile.id } });
-  await prisma.profilePermission.createMany({
-    data: getPermIdsByCodes(hmPermCodes).map((pid) => ({
-      profileId: hiringManagerProfile.id,
-      permissionId: pid,
-    })),
-  });
+  for (const permId of getPermIdsByCodes(hmPermCodes)) {
+    await prisma.profilePermission.create({
+      data: { profileId: hiringManagerProfile.id, permissionId: permId },
+    });
+  }
 
-  // Read Only Profile gets HM Perms
+  // Read Only Profile Permissions
   await prisma.profilePermission.deleteMany({ where: { profileId: readOnlyProfile.id } });
-  await prisma.profilePermission.createMany({
-    data: getPermIdsByCodes(hmPermCodes).map((pid) => ({
-      profileId: readOnlyProfile.id,
-      permissionId: pid,
-    })),
-  });
+  const roPermCodes = [
+    'recruitment:job:read',
+    'recruitment:candidate:read',
+    'identity:profile:read',
+  ];
+  for (const permId of getPermIdsByCodes(roPermCodes)) {
+    await prisma.profilePermission.create({
+      data: { profileId: readOnlyProfile.id, permissionId: permId },
+    });
+  }
 
-  // 4. Seed Roles (Hierarchy only)
-  console.log('[Seed] Seeding roles hierarchy...');
+  // 4. Seed Standard Role Hierarchy
+  console.log('[Seed] Seeding Roles hierarchy...');
+  
   const ceoRole = await prisma.role.upsert({
     where: { name: 'CEO' },
     update: {},
@@ -152,7 +163,7 @@ async function main() {
     create: { name: 'HR Head', parentId: ceoRole.id },
   });
 
-  const managerRole = await prisma.role.upsert({
+  const recruiterMgrRole = await prisma.role.upsert({
     where: { name: 'Recruitment Manager' },
     update: { parentId: hrHeadRole.id },
     create: { name: 'Recruitment Manager', parentId: hrHeadRole.id },
@@ -160,12 +171,12 @@ async function main() {
 
   const recruiterRole = await prisma.role.upsert({
     where: { name: 'Recruiter' },
-    update: { parentId: managerRole.id },
-    create: { name: 'Recruiter', parentId: managerRole.id },
+    update: { parentId: recruiterMgrRole.id },
+    create: { name: 'Recruiter', parentId: recruiterMgrRole.id },
   });
 
-  // 5. Seed Sharing Children Metadata (Job -> Candidate)
-  console.log('[Seed] Seeding resource share children metadata rules...');
+  // 5. Seed Sharing Model Cascades (Rules metadata)
+  console.log('[Seed] Seeding Resource Share Cascading Relationships...');
   await prisma.resourceShareChild.upsert({
     where: { parentType_childType: { parentType: 'Job', childType: 'Candidate' } },
     update: {},
@@ -183,7 +194,7 @@ async function main() {
   const adminEmail = 'admin@ats.com';
   const passwordHash = await bcrypt.hash('admin123', 10);
   
-  await prisma.user.upsert({
+  const rootAdmin = await prisma.user.upsert({
     where: { email: adminEmail },
     update: {},
     create: {
@@ -193,6 +204,34 @@ async function main() {
       lastName: 'Admin',
       profileId: adminProfile.id,
       roleId: ceoRole.id,
+    },
+  });
+
+  // 7. Seed OWD Sharing Defaults
+  console.log('[Seed] Seeding sharing defaults...');
+  await prisma.sharingDefault.upsert({
+    where: { resourceType: 'Job' },
+    update: {},
+    create: {
+      resourceType: 'Job',
+      defaultInternalAccess: 'PUBLIC_READ_WRITE',
+      defaultExternalAccess: 'PUBLIC_READ_WRITE',
+      grantAccessUsingHierarchies: true,
+      createdById: rootAdmin.id,
+      lastModifiedById: rootAdmin.id,
+    },
+  });
+
+  await prisma.sharingDefault.upsert({
+    where: { resourceType: 'Candidate' },
+    update: {},
+    create: {
+      resourceType: 'Candidate',
+      defaultInternalAccess: 'PRIVATE',
+      defaultExternalAccess: 'PRIVATE',
+      grantAccessUsingHierarchies: true,
+      createdById: rootAdmin.id,
+      lastModifiedById: rootAdmin.id,
     },
   });
 

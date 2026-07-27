@@ -13,44 +13,8 @@ export class CandidatesRepository {
   }
 
   async findAll(userId, userProfile) {
-    // Super Admin bypass: retrieve all candidates
-    if (userProfile === 'Admin') {
-      return this.prismaService.candidate.findMany({
-        where: { deletedAt: null },
-        include: {
-          owner: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-            },
-          },
-          candidateJobs: {
-            include: { job: true },
-          },
-        },
-      });
-    }
-
-    // Standard user: retrieve owned candidates OR directly/inherited shared candidates
-    const sharedAccess = await this.prismaService.userResourceAccess.findMany({
-      where: {
-        userId,
-        resourceType: 'Candidate',
-      },
-      select: { resourceId: true },
-    });
-    const sharedCandidateIds = sharedAccess.map((sa) => sa.resourceId);
-
     return this.prismaService.candidate.findMany({
-      where: {
-        deletedAt: null,
-        OR: [
-          { ownerId: userId },
-          { id: { in: sharedCandidateIds } },
-        ],
-      },
+      where: { deletedAt: null },
       include: {
         owner: {
           select: {
@@ -61,9 +25,16 @@ export class CandidatesRepository {
           },
         },
         candidateJobs: {
-          include: { job: true },
+          include: {
+            job: {
+              include: {
+                department: true,
+              },
+            },
+          },
         },
       },
+      orderBy: { createdAt: 'desc' },
     });
   }
 
@@ -80,7 +51,13 @@ export class CandidatesRepository {
           },
         },
         candidateJobs: {
-          include: { job: true },
+          include: {
+            job: {
+              include: {
+                department: true,
+              },
+            },
+          },
         },
       },
     });

@@ -173,6 +173,8 @@ model User {
   lastModifiedCandidates  Candidate[]     @relation("CandidateLastModifiedBy")
   createdCandidateJobs    CandidateJob[]  @relation("CandidateJobCreatedBy")
   lastModifiedCandJobs    CandidateJob[]  @relation("CandidateJobLastModifiedBy")
+  createdSharingDefaults  SharingDefault[] @relation("SharingDefaultCreatedBy")
+  lastModifiedSharingDefaults SharingDefault[] @relation("SharingDefaultLastModifiedBy")
 
   @@map("users")
 }
@@ -332,4 +334,22 @@ model AuditLog {
   user User? @relation(fields: [userId], references: [id])
 
   @@map("audit_logs")
+}
+
+model SharingDefault {
+  id                         String   @id @default(uuid()) @db.Uuid
+  resourceType               String   @unique @map("resource_type") @db.VarChar(50) // 'Job', 'Candidate'
+  defaultInternalAccess      String   @map("default_internal_access") @db.VarChar(50) // 'PRIVATE', 'PUBLIC_READ', 'PUBLIC_READ_WRITE'
+  defaultExternalAccess      String   @map("default_external_access") @db.VarChar(50) // 'PRIVATE', 'PUBLIC_READ', 'PUBLIC_READ_WRITE'
+  grantAccessUsingHierarchies Boolean  @default(true) @map("grant_access_using_hierarchies")
+  createdAt                  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                  DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("SharingDefaultCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("SharingDefaultLastModifiedBy", fields: [lastModifiedById], references: [id])
+
+  @@map("sharing_defaults")
 }

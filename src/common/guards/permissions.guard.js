@@ -33,7 +33,7 @@ export class PermissionsGuard {
     }
 
     const permissions = await this.getUserPermissions(user.sub);
-    return requiredPermissions.every((perm) => permissions.includes(perm));
+    return requiredPermissions.some((perm) => permissions.includes(perm));
   }
 
   async getUserPermissions(userId) {
@@ -61,18 +61,25 @@ export class PermissionsGuard {
       },
     });
 
-    if (!dbUser) {
-      return [];
+    if (!dbUser) return [];
+
+    const perms = new Set();
+    if (dbUser.profile && dbUser.profile.profilePermissions) {
+      dbUser.profile.profilePermissions.forEach((pp) => {
+        if (pp.permission) perms.add(pp.permission.code);
+      });
     }
 
-    const profilePerms = dbUser.profile.profilePermissions.map(
-      (pp) => pp.permission.code
-    );
+    if (dbUser.userPermissionSets) {
+      dbUser.userPermissionSets.forEach((ups) => {
+        if (ups.permissionSet && ups.permissionSet.permissionSetPerms) {
+          ups.permissionSet.permissionSetPerms.forEach((psp) => {
+            if (psp.permission) perms.add(psp.permission.code);
+          });
+        }
+      });
+    }
 
-    const permSetsPerms = dbUser.userPermissionSets.flatMap((ups) =>
-      ups.permissionSet.permissionSetPerms.map((psp) => psp.permission.code)
-    );
-
-    return Array.from(new Set([...profilePerms, ...permSetsPerms]));
+    return Array.from(perms);
   }
 }

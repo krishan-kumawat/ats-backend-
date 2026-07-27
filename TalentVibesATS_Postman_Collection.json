@@ -1,0 +1,1388 @@
+{
+  "info": {
+    "name": "TalentVibes ATS API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "",
+                  "pm.environment.set(\"accessToken\", response.accessToken);",
+                  "pm.environment.set(\"refreshToken\", response.refreshToken);",
+                  "",
+                  "console.log(\"Access Token:\", response.accessToken);",
+                  "console.log(\"Refresh Token:\", response.refreshToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@ats.com\",\n  \"password\": \"admin123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"recruiter1@ats.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Smith\",\n  \"profileName\": \"Recruiter\",\n  \"roleName\": \"Recruiter\",\n  \"departmentName\": \"HR\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Alice Modified\",\n  \"lastName\": \"Smith Modified\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign Permission Sets to User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionSetIds\": [\"permission-set-uuid-1\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:id/permission-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                ":id",
+                "permission-sets"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Revoke Permission Set from User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:id/permission-sets/:setId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                ":id",
+                "permission-sets",
+                ":setId"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user-uuid-here"
+                },
+                {
+                  "key": "setId",
+                  "value": "permission-set-uuid-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profiles",
+      "item": [
+        {
+          "name": "Create Profile",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom Recruiter\",\n  \"description\": \"Recruiter profile with specific bounds\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Profiles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Profile By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "profile-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated description details\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "profile-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete Profile",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "profile-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign Permissions to Profile",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionIds\": [\n    \"permission-uuid-1\",\n    \"permission-uuid-2\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profiles/:id/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                ":id",
+                "permissions"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "profile-uuid-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles",
+      "item": [
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lead Recruiter\",\n  \"parentId\": \"YOUR_PARENT_ROLE_UUID_OR_NULL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Role By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "role-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Role",
+          "request": {
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Senior Recruiter\",\n  \"parentId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "role-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/roles/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "roles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "role-uuid-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Permission Sets",
+      "item": [
+        {
+          "name": "Create Permission Set",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Job Admin Set\",\n  \"description\": \"Grants full job administration permissions\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permission-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permission-sets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Permission Sets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permission-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permission-sets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Permission Set By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permission-sets/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permission-sets",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "permission-set-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Permission Set",
+          "request": {
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated permission set scope\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permission-sets/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permission-sets",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "permission-set-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete Permission Set",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permission-sets/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permission-sets",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "permission-set-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign Permissions to Set",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionIds\": [\n    \"permission-uuid-1\",\n    \"permission-uuid-2\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/permission-sets/:id/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "permission-sets",
+                ":id",
+                "permissions"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "permission-set-uuid-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "Create Job",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Software Architect (Node.js)\",\n  \"description\": \"Responsible for architectural decisions on backend engines.\",\n  \"departmentId\": \"YOUR_DEPARTMENT_UUID_OR_NULL\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "jobs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Accessible Jobs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "jobs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Job By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "jobs",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "job-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Job details",
+          "request": {
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Principal Software Architect\",\n  \"status\": \"Open\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "jobs",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "job-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete Job",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/jobs/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "jobs",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "job-uuid-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Candidates",
+      "item": [
+        {
+          "name": "Create Candidate",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+1234567890\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/candidates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "candidates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Accessible Candidates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/candidates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "candidates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Candidate By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/candidates/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "candidates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "candidate-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Candidate Profile",
+          "request": {
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John Modified\",\n  \"phone\": \"+987654321\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/candidates/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "candidates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "candidate-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete Candidate",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/candidates/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "candidates",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "candidate-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Link Candidate to Job opening",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": \"YOUR_JOB_UUID\",\n  \"status\": \"Applied\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/candidates/:id/jobs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "candidates",
+                ":id",
+                "jobs"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "candidate-uuid-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Record Sharing",
+      "item": [
+        {
+          "name": "Share Resource",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Job\",\n  \"resourceId\": \"YOUR_JOB_UUID\",\n  \"sharedToId\": \"YOUR_RECIPIENT_USER_UUID\",\n  \"accessLevel\": \"READ\",\n  \"cascadeToChildren\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sharing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sharing"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Revoke Share",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resourceType\": \"Job\",\n  \"resourceId\": \"YOUR_JOB_UUID\",\n  \"sharedToId\": \"YOUR_RECIPIENT_USER_UUID\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sharing/unshare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sharing",
+                "unshare"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Effective Resource Accesses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sharing/user?userId=YOUR_USER_UUID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sharing",
+                "user"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "YOUR_USER_UUID"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Resource Access Log List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sharing/resource?resourceType=Job&resourceId=YOUR_JOB_UUID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sharing",
+                "resource"
+              ],
+              "query": [
+                {
+                  "key": "resourceType",
+                  "value": "Job"
+                },
+                {
+                  "key": "resourceId",
+                  "value": "YOUR_JOB_UUID"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs",
+      "item": [
+        {
+          "name": "Retrieve All System Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "audit-logs"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Departments",
+      "item": [
+        {
+          "name": "Create Department",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Engineering\",\n  \"parentId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/departments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Departments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/departments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Department By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/departments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "department-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Department",
+          "request": {
+            "method": "PATCH",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Engineering (Backend)\",\n  \"parentId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/departments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "department-uuid-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Soft Delete Department",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/departments/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "departments",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "department-uuid-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

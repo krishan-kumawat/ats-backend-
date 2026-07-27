@@ -1,0 +1,355 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Department {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @unique @db.VarChar(100)
+  parentId  String?   @map("parent_id") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamp(6)
+
+  parent   Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children Department[] @relation("DepartmentHierarchy")
+  users    User[]
+  jobs     Job[]
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("DepartmentCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("DepartmentLastModifiedBy", fields: [lastModifiedById], references: [id])
+
+  @@map("departments")
+}
+
+model Role {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String    @unique @db.VarChar(100)
+  parentId  String?   @map("parent_id") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamp(6)
+
+  parent   Role?  @relation("RoleHierarchy", fields: [parentId], references: [id])
+  children Role[] @relation("RoleHierarchy")
+  users    User[]
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("RoleCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("RoleLastModifiedBy", fields: [lastModifiedById], references: [id])
+
+  @@map("roles")
+}
+
+model Profile {
+  id                 String              @id @default(uuid()) @db.Uuid
+  name               String              @unique @db.VarChar(100)
+  description        String?             @db.Text
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt          DateTime            @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt          DateTime?           @map("deleted_at") @db.Timestamp(6)
+  profilePermissions ProfilePermission[]
+  users              User[]
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("ProfileCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("ProfileLastModifiedBy", fields: [lastModifiedById], references: [id])
+
+  @@map("profiles")
+}
+
+model Permission {
+  id                 String                      @id @default(uuid()) @db.Uuid
+  module             String                      @db.VarChar(50)
+  resource           String                      @db.VarChar(50)
+  action             String                      @db.VarChar(50)
+  code               String                      @unique @db.VarChar(100)
+  createdAt          DateTime                    @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt          DateTime                    @updatedAt @map("updated_at") @db.Timestamp(6)
+  profilePermissions ProfilePermission[]
+  permissionSetPerms PermissionSetPermission[]
+
+  @@map("permissions")
+}
+
+model ProfilePermission {
+  profileId    String     @map("profile_id") @db.Uuid
+  permissionId String     @map("permission_id") @db.Uuid
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamp(6)
+  profile      Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, permissionId])
+  @@map("profile_permissions")
+}
+
+model PermissionSet {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  name               String                    @unique @db.VarChar(100)
+  description        String?                   @db.Text
+  createdAt          DateTime                  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt          DateTime                  @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt          DateTime?                 @map("deleted_at") @db.Timestamp(6)
+  permissionSetPerms PermissionSetPermission[]
+  userPermissionSets UserPermissionSet[]
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("PermissionSetCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("PermissionSetLastModifiedBy", fields: [lastModifiedById], references: [id])
+
+  @@map("permission_sets")
+}
+
+model PermissionSetPermission {
+  permissionSetId String        @map("permission_set_id") @db.Uuid
+  permissionId    String        @map("permission_id") @db.Uuid
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamp(6)
+  permissionSet   PermissionSet @relation(fields: [permissionSetId], references: [id], onDelete: Cascade)
+  permission      Permission    @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([permissionSetId, permissionId])
+  @@map("permission_set_permissions")
+}
+
+model User {
+  id               String              @id @default(uuid()) @db.Uuid
+  email            String              @unique @db.VarChar(255)
+  passwordHash     String              @map("password_hash") @db.VarChar(255)
+  firstName        String              @map("first_name") @db.VarChar(100)
+  lastName         String              @map("last_name") @db.VarChar(100)
+  departmentId     String?             @map("department_id") @db.Uuid
+  roleId           String?             @map("role_id") @db.Uuid
+  profileId        String              @map("profile_id") @db.Uuid
+  refreshTokenHash String?             @map("refresh_token_hash") @db.VarChar(255)
+  createdAt        DateTime            @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt        DateTime            @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt        DateTime?           @map("deleted_at") @db.Timestamp(6)
+
+  department         Department?         @relation(fields: [departmentId], references: [id])
+  role               Role?               @relation(fields: [roleId], references: [id])
+  profile            Profile             @relation(fields: [profileId], references: [id])
+  userPermissionSets UserPermissionSet[]
+  ownedJobs          Job[]               @relation("JobOwner")
+  ownedCandidates    Candidate[]         @relation("CandidateOwner")
+  sharesCreated      ResourceShare[]     @relation("SharedBy")
+  sharesReceived     ResourceShare[]     @relation("SharedTo")
+  resourceAccesses   UserResourceAccess[]
+  auditLogs          AuditLog[]
+
+  // Auditing Self-reference
+  createdUsers      User[]    @relation("UserCreatedBy")
+  lastModifiedUsers User[]    @relation("UserLastModifiedBy")
+  creator           User?     @relation("UserCreatedBy", fields: [createdById], references: [id])
+  createdById       String?   @map("created_by_id") @db.Uuid
+  updater           User?     @relation("UserLastModifiedBy", fields: [lastModifiedById], references: [id])
+  lastModifiedById  String?   @map("last_modified_by_id") @db.Uuid
+
+  // Auditing lookups from other tables
+  createdDepartments      Department[]    @relation("DepartmentCreatedBy")
+  lastModifiedDepartments Department[]    @relation("DepartmentLastModifiedBy")
+  createdRoles            Role[]          @relation("RoleCreatedBy")
+  lastModifiedRoles       Role[]          @relation("RoleLastModifiedBy")
+  createdProfiles         Profile[]       @relation("ProfileCreatedBy")
+  lastModifiedProfiles    Profile[]       @relation("ProfileLastModifiedBy")
+  createdPermissionSets   PermissionSet[] @relation("PermissionSetCreatedBy")
+  lastModifiedPermSets    PermissionSet[] @relation("PermissionSetLastModifiedBy")
+  createdJobs             Job[]           @relation("JobCreatedBy")
+  lastModifiedJobs        Job[]           @relation("JobLastModifiedBy")
+  createdCandidates       Candidate[]     @relation("CandidateCreatedBy")
+  lastModifiedCandidates  Candidate[]     @relation("CandidateLastModifiedBy")
+  createdCandidateJobs    CandidateJob[]  @relation("CandidateJobCreatedBy")
+  lastModifiedCandJobs    CandidateJob[]  @relation("CandidateJobLastModifiedBy")
+  createdSharingDefaults  SharingDefault[] @relation("SharingDefaultCreatedBy")
+  lastModifiedSharingDefaults SharingDefault[] @relation("SharingDefaultLastModifiedBy")
+
+  @@map("users")
+}
+
+model UserPermissionSet {
+  userId          String        @map("user_id") @db.Uuid
+  permissionSetId String        @map("permission_set_id") @db.Uuid
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamp(6)
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissionSet   PermissionSet @relation(fields: [permissionSetId], references: [id], onDelete: Cascade)
+
+  @@id([userId, permissionSetId])
+  @@map("user_permission_sets")
+}
+
+model Job {
+  id           String         @id @default(uuid()) @db.Uuid
+  title        String         @db.VarChar(255)
+  description  String?        @db.Text
+  status       String         @db.VarChar(50) // 'Draft', 'Open', 'Closed'
+  departmentId String?        @map("department_id") @db.Uuid
+  ownerId      String         @map("owner_id") @db.Uuid
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime       @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt    DateTime?      @map("deleted_at") @db.Timestamp(6)
+
+  department    Department?    @relation(fields: [departmentId], references: [id])
+  owner         User           @relation("JobOwner", fields: [ownerId], references: [id])
+  candidateJobs CandidateJob[]
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("JobCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("JobLastModifiedBy", fields: [lastModifiedById], references: [id])
+
+  @@map("jobs")
+}
+
+model Candidate {
+  id        String    @id @default(uuid()) @db.Uuid
+  firstName String    @map("first_name") @db.VarChar(100)
+  lastName  String    @map("last_name") @db.VarChar(100)
+  email     String    @unique @db.VarChar(255)
+  phone     String?   @db.VarChar(50)
+  ownerId   String    @map("owner_id") @db.Uuid
+  skills    String[]  @default([])
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamp(6)
+
+  owner         User           @relation("CandidateOwner", fields: [ownerId], references: [id])
+  candidateJobs CandidateJob[]
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("CandidateCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("CandidateLastModifiedBy", fields: [lastModifiedById], references: [id])
+
+  @@map("candidates")
+}
+
+model CandidateJob {
+  candidateId    String    @map("candidate_id") @db.Uuid
+  jobId          String    @map("job_id") @db.Uuid
+  status         String    @db.VarChar(50) // 'Applied', 'Screening', 'Interviewing', 'Offered', 'Rejected'
+  expectedSalary Decimal?  @map("expected_salary") @db.Decimal(12, 2)
+  proposedSalary Decimal?  @map("proposed_salary") @db.Decimal(12, 2)
+  proposedEquity Decimal?  @map("proposed_equity") @db.Decimal(12, 2)
+  sourceTag      String?   @map("source_tag") @db.VarChar(100)
+  technicalScore Int?      @map("technical_score")
+  systemScore    Int?      @map("system_score")
+  cultureScore   Int?      @map("culture_score")
+  pros           String?   @map("pros") @db.Text
+  cons           String?   @map("cons") @db.Text
+  recommendation String?   @map("recommendation") @db.VarChar(50)
+  approvalStatus String?   @map("approval_status") @db.VarChar(50)
+  approvalFeedback String? @map("approval_feedback") @db.Text
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamp(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamp(6)
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job       Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("CandidateJobCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("CandidateJobLastModifiedBy", fields: [lastModifiedById], references: [id])
+
+  @@id([candidateId, jobId])
+  @@map("candidate_jobs")
+}
+
+model ResourceShare {
+  id                String   @id @default(uuid()) @db.Uuid
+  resourceType      String   @map("resource_type") @db.VarChar(50) // 'Job', 'Candidate'
+  resourceId        String   @map("resource_id") @db.Uuid
+  sharedToId        String   @map("shared_to_id") @db.Uuid
+  sharedById        String   @map("shared_by_id") @db.Uuid
+  accessLevel       String   @map("access_level") @db.VarChar(50) // 'READ', 'EDIT'
+  cascadeToChildren Boolean  @default(false) @map("cascade_to_children")
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  sharedTo User @relation("SharedTo", fields: [sharedToId], references: [id], onDelete: Cascade)
+  sharedBy User @relation("SharedBy", fields: [sharedById], references: [id], onDelete: Cascade)
+
+  @@unique([resourceType, resourceId, sharedToId])
+  @@map("resource_shares")
+}
+
+model ResourceShareChild {
+  id            String   @id @default(uuid()) @db.Uuid
+  parentType    String   @map("parent_type") @db.VarChar(50) // 'Job'
+  childType     String   @map("child_type") @db.VarChar(50) // 'Candidate'
+  relationTable String   @map("relation_table") @db.VarChar(100) // 'candidate_jobs'
+  parentFkField String   @map("parent_fk_field") @db.VarChar(100) // 'job_id'
+  childFkField  String   @map("child_fk_field") @db.VarChar(100) // 'candidate_id'
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  @@unique([parentType, childType])
+  @@map("resource_share_children")
+}
+
+model UserResourceAccess {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  resourceType String   @map("resource_type") @db.VarChar(50) // 'Job', 'Candidate'
+  resourceId   String   @map("resource_id") @db.Uuid
+  accessLevel  String   @map("access_level") @db.VarChar(50) // 'READ', 'EDIT'
+  sharedVia    String   @map("shared_via") @db.VarChar(50) // 'DIRECT', 'INHERITED', 'OWNER'
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, resourceType, resourceId])
+  @@index([userId, resourceType, resourceId])
+  @@map("user_resource_access")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String?  @map("user_id") @db.Uuid
+  action       String   @db.VarChar(100)
+  resourceType String?  @map("resource_type") @db.VarChar(50)
+  resourceId   String?  @map("resource_id") @db.Uuid
+  payload      Json?    @db.JsonB
+  ipAddress    String?  @map("ip_address") @db.VarChar(45)
+  userAgent    String?  @map("user_agent") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model SharingDefault {
+  id                         String   @id @default(uuid()) @db.Uuid
+  resourceType               String   @unique @map("resource_type") @db.VarChar(50) // 'Job', 'Candidate'
+  defaultInternalAccess      String   @map("default_internal_access") @db.VarChar(50) // 'PRIVATE', 'PUBLIC_READ', 'PUBLIC_READ_WRITE'
+  defaultExternalAccess      String   @map("default_external_access") @db.VarChar(50) // 'PRIVATE', 'PUBLIC_READ', 'PUBLIC_READ_WRITE'
+  grantAccessUsingHierarchies Boolean  @default(true) @map("grant_access_using_hierarchies")
+  createdAt                  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt                  DateTime @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  // Auditing
+  createdById      String? @map("created_by_id") @db.Uuid
+  lastModifiedById String? @map("last_modified_by_id") @db.Uuid
+  createdBy        User?   @relation("SharingDefaultCreatedBy", fields: [createdById], references: [id])
+  lastModifiedBy   User?   @relation("SharingDefaultLastModifiedBy", fields: [lastModifiedById], references: [id])
+
+  @@map("sharing_defaults")
+}

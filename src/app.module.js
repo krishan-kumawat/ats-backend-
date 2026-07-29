@@ -4,7 +4,6 @@ import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { PrismaModule } from './prisma/prisma.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RedisModule } from './redis/redis.module.js';
 import { User } from './entities/user.entity.js';
 import { Role } from './entities/role.entity.js';
 import { Profile } from './entities/profile.entity.js';
@@ -65,7 +64,6 @@ import { DepartmentsModule } from './departments/departments.module.js';
       synchronize: true,
     }),
     PrismaModule,
-    RedisModule,
     ProfilesModule,
     RolesModule,
     PermissionsModule,

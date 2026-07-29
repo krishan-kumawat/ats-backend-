@@ -15,12 +15,12 @@ import { ProfilesService } from './profiles.service.js';
 import { CreateProfileDto, UpdateProfileDto } from './dto/create-profile.dto.js';
 import { AssignPermissionsDto } from './dto/assign-permissions.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
-import { PermissionsGuard } from '../common/guards/permissions.guard.js';
-import { RequirePermissions } from '../common/decorators/permissions.decorator.js';
+import { SystemPermGuard } from '../common/guards/system-perm.guard.js';
+import { RequireSystemPerm } from '../common/decorators/require-system-perm.decorator.js';
 
 @ApiTags('Profiles')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, SystemPermGuard)
 @Controller('profiles')
 @Dependencies(ProfilesService)
 export class ProfilesController {
@@ -29,7 +29,7 @@ export class ProfilesController {
   }
 
   @Post()
-  @RequirePermissions('identity:profile:write')
+  @RequireSystemPerm('modifyAllData')
   @ApiOperation({ summary: 'Create a new baseline permission profile' })
   @ApiResponse({ status: 201, description: 'Profile successfully created.' })
   @ApiResponse({ status: 400, description: 'Invalid input data.' })
@@ -39,7 +39,7 @@ export class ProfilesController {
   }
 
   @Get()
-  @RequirePermissions('identity:profile:read')
+  @RequireSystemPerm('viewAllData')
   @ApiOperation({ summary: 'Retrieve all profiles with their permissions' })
   @ApiResponse({ status: 200, description: 'Successfully returned all profiles.' })
   findAll() {
@@ -47,7 +47,7 @@ export class ProfilesController {
   }
 
   @Get(':id')
-  @RequirePermissions('identity:profile:read')
+  @RequireSystemPerm('viewAllData')
   @ApiOperation({ summary: 'Get a specific profile by ID' })
   @ApiResponse({ status: 200, description: 'Successfully returned profile details.' })
   @ApiResponse({ status: 404, description: 'Profile not found.' })
@@ -56,7 +56,7 @@ export class ProfilesController {
   }
 
   @Patch(':id')
-  @RequirePermissions('identity:profile:write')
+  @RequireSystemPerm('modifyAllData')
   @ApiOperation({ summary: 'Update profile details' })
   @ApiResponse({ status: 200, description: 'Profile details updated.' })
   @ApiResponse({ status: 404, description: 'Profile not found.' })
@@ -65,7 +65,7 @@ export class ProfilesController {
   }
 
   @Delete(':id')
-  @RequirePermissions('identity:profile:write')
+  @RequireSystemPerm('modifyAllData')
   @ApiOperation({ summary: 'Soft delete a profile' })
   @ApiResponse({ status: 200, description: 'Profile successfully deleted.' })
   @ApiResponse({ status: 404, description: 'Profile not found.' })
@@ -74,7 +74,7 @@ export class ProfilesController {
   }
 
   @Post(':id/clone')
-  @RequirePermissions('identity:profile:write')
+  @RequireSystemPerm('modifyAllData')
   @ApiOperation({ summary: 'Clone a profile and all its object/field/system permissions' })
   @ApiResponse({ status: 201, description: 'Profile cloned successfully.' })
   @ApiResponse({ status: 404, description: 'Source profile not found.' })
@@ -83,7 +83,7 @@ export class ProfilesController {
   }
 
   @Post(':id/permissions')
-  @RequirePermissions('identity:profile:write')
+  @RequireSystemPerm('modifyAllData')
   @ApiOperation({ summary: 'Assign a list of permission codes to this profile' })
   @ApiResponse({ status: 200, description: 'Permissions assigned successfully.' })
   @ApiResponse({ status: 404, description: 'Profile not found.' })

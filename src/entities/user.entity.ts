@@ -31,6 +31,9 @@ export class User extends SalesforceAuditEntity {
   @Column({ name: 'profile_id', type: 'uuid' })
   profileId: string;
 
+  @Column({ name: 'department_id', type: 'uuid', nullable: true })
+  departmentId: string | null;
+
   @Column({ name: 'refresh_token_hash', type: 'varchar', length: 255, nullable: true })
   refreshTokenHash: string | null;
 

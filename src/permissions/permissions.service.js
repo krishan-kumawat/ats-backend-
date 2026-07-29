@@ -1,7 +1,6 @@
 import { Injectable, Dependencies } from '@nestjs/common';
 import { getEntityManagerToken } from '@nestjs/typeorm';
 import { In } from 'typeorm';
-import { RedisService } from '../redis/redis.service.js';
 import { User } from '../entities/user.entity.js';
 import { PermissionSet } from '../entities/permission-set.entity.js';
 import { PermissionSetAssignment } from '../entities/permission-set-assignment.entity.js';
@@ -10,27 +9,13 @@ import { FieldPermission } from '../entities/field-permission.entity.js';
 import { SystemPermission } from '../entities/system-permission.entity.js';
 
 @Injectable()
-@Dependencies(getEntityManagerToken(), RedisService)
+@Dependencies(getEntityManagerToken())
 export class PermissionsService {
-  constructor(entityManager, redisService) {
+  constructor(entityManager) {
     this.entityManager = entityManager;
-    this.redisService = redisService;
   }
 
   async getEffectivePermissions(userId) {
-    const cacheKey = `user:permissions:${userId}`;
-    
-    // 1. Try reading from Redis cache
-    try {
-      const cached = await this.redisService.get(cacheKey);
-      if (cached) {
-        return JSON.parse(cached);
-      }
-    } catch (err) {
-      console.error('[PermissionsService] Redis read failed:', err);
-    }
-
-    // 2. Cache miss: Query DB and calculate BOOL_OR union permissions
     const user = await this.entityManager.findOne(User, {
       where: { id: userId },
     });
@@ -123,48 +108,18 @@ export class PermissionsService {
       }
     }
 
-    // 3. Save computed matrix to Redis cache (24 hours TTL)
-    try {
-      await this.redisService.set(cacheKey, JSON.stringify(matrix), 86400);
-    } catch (err) {
-      console.error('[PermissionsService] Redis write failed:', err);
-    }
-
     return matrix;
   }
 
   async invalidateCache(userId) {
-    const cacheKey = `user:permissions:${userId}`;
-    try {
-      await this.redisService.del(cacheKey);
-    } catch (err) {
-      console.error('[PermissionsService] Redis del failed:', err);
-    }
+    // No-op without Redis cache
   }
 
   async invalidateCacheForProfile(profileId) {
-    try {
-      const users = await this.entityManager.find(User, { where: { profileId } });
-      for (const u of users) {
-        await this.invalidateCache(u.id);
-      }
-    } catch (err) {
-      console.error('[PermissionsService] Profile bulk invalidation failed:', err);
-    }
+    // No-op without Redis cache
   }
 
   async invalidateCacheForPermissionSet(permissionSetId) {
-    try {
-      const ps = await this.entityManager.findOne(PermissionSet, { where: { id: permissionSetId } });
-      if (ps && ps.profileId) {
-        await this.invalidateCacheForProfile(ps.profileId);
-      }
-      const assignments = await this.entityManager.find(PermissionSetAssignment, { where: { permissionSetId } });
-      for (const a of assignments) {
-        await this.invalidateCache(a.userId);
-      }
-    } catch (err) {
-      console.error('[PermissionsService] PermSet bulk invalidation failed:', err);
-    }
+    // No-op without Redis cache
   }
 }

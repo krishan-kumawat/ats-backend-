@@ -2,6 +2,9 @@ import { Injectable, ConflictException, NotFoundException, ForbiddenException, D
 import { getEntityManagerToken } from '@nestjs/typeorm';
 import { ProfilesRepository } from './profiles.repository.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
+import { PermissionSet } from '../entities/permission-set.entity.js';
+import { ObjectPermission } from '../entities/object-permission.entity.js';
+import { SchemaObject } from '../entities/schema-object.entity.js';
 
 @Injectable()
 @Dependencies(ProfilesRepository, PermissionsService, getEntityManagerToken())
@@ -56,8 +59,65 @@ export class ProfilesService {
   }
 
   async assignPermissions(id, permissionIds) {
-    await this.findOne(id);
+    const profile = await this.findOne(id);
     const result = await this.profilesRepository.assignPermissions(id, permissionIds);
+
+    // Resolve or create base permission set for the profile
+    let pset = await this.entityManager.findOne(PermissionSet, { where: { profileId: id } });
+    if (!pset) {
+      pset = this.entityManager.create(PermissionSet, {
+        name: `${profile.name} BaseSet`,
+        description: `Base permission set for profile ${profile.name}`,
+        isCustom: false,
+        profileId: id,
+      });
+      await this.entityManager.save(PermissionSet, pset);
+    }
+
+    // Resolve Job and Candidate Schema Objects
+    const jobObj = await this.entityManager.findOne(SchemaObject, { where: { apiName: 'Job' } });
+    const candObj = await this.entityManager.findOne(SchemaObject, { where: { apiName: 'Candidate' } });
+
+    if (jobObj && candObj && result.profilePermissions) {
+      const codes = result.profilePermissions.map((pp) => pp.permission?.code).filter(Boolean);
+
+      const jobOLS = {
+        allowRead: codes.includes('recruitment:job:read'),
+        allowCreate: codes.includes('recruitment:job:create'),
+        allowEdit: codes.includes('recruitment:job:write') || codes.includes('recruitment:job:edit'),
+        allowDelete: codes.includes('recruitment:job:write') || codes.includes('recruitment:job:delete'),
+      };
+
+      const candOLS = {
+        allowRead: codes.includes('recruitment:candidate:read'),
+        allowCreate: codes.includes('recruitment:candidate:create'),
+        allowEdit: codes.includes('recruitment:candidate:write') || codes.includes('recruitment:candidate:edit'),
+        allowDelete: codes.includes('recruitment:candidate:write') || codes.includes('recruitment:candidate:delete'),
+      };
+
+      // Upsert Job OLS
+      const existingJobOp = await this.entityManager.findOne(ObjectPermission, {
+        where: { permissionSetId: pset.id, schemaObjectId: jobObj.id },
+      });
+      await this.entityManager.save(ObjectPermission, {
+        id: existingJobOp ? existingJobOp.id : undefined,
+        permissionSetId: pset.id,
+        schemaObjectId: jobObj.id,
+        ...jobOLS,
+      });
+
+      // Upsert Candidate OLS
+      const existingCandOp = await this.entityManager.findOne(ObjectPermission, {
+        where: { permissionSetId: pset.id, schemaObjectId: candObj.id },
+      });
+      await this.entityManager.save(ObjectPermission, {
+        id: existingCandOp ? existingCandOp.id : undefined,
+        permissionSetId: pset.id,
+        schemaObjectId: candObj.id,
+        ...candOLS,
+      });
+    }
+
     await this.permissionsService.invalidateCacheForProfile(id);
     return result;
   }

@@ -42,7 +42,7 @@ export class JobsController {
   @ApiOperation({ summary: 'List all jobs visible to the user' })
   @ApiResponse({ status: 200, description: 'List of jobs returned.' })
   findAll(@Req() request) {
-    return this.jobsService.findAll(request.user.sub, request.user.profile);
+    return this.jobsService.findAll(request.user.sub);
   }
 
   @Get(':id')

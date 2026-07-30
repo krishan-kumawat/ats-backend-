@@ -1,13 +1,18 @@
 import { Injectable, NotFoundException, Dependencies } from '@nestjs/common';
 import { CandidatesRepository } from './candidates.repository.js';
 import { SharingService } from '../sharing/sharing.service.js';
+import { PermissionsService } from '../permissions/permissions.service.js';
+import { getEntityManagerToken } from '@nestjs/typeorm';
+import { OrgWideDefault } from '../entities/org-wide-default.entity.js';
 
 @Injectable()
-@Dependencies(CandidatesRepository, SharingService)
+@Dependencies(CandidatesRepository, SharingService, PermissionsService, getEntityManagerToken())
 export class CandidatesService {
-  constructor(candidatesRepository, sharingService) {
+  constructor(candidatesRepository, sharingService, permissionsService, entityManager) {
     this.candidatesRepository = candidatesRepository;
     this.sharingService = sharingService;
+    this.permissionsService = permissionsService;
+    this.entityManager = entityManager;
   }
 
   async create(createCandidateDto, ownerId) {
@@ -19,8 +24,23 @@ export class CandidatesService {
     });
   }
 
-  async findAll(userId, userProfile) {
-    return this.candidatesRepository.findAll(userId, userProfile);
+  async findAll(userId) {
+    const matrix = await this.permissionsService.getEffectivePermissions(userId);
+
+    const owd = await this.entityManager.findOne(OrgWideDefault, {
+      where: { schemaObject: { apiName: 'Candidate' } },
+      relations: { schemaObject: true },
+    });
+    const isPublic = owd?.defaultAccessLevel === 'READ_ONLY' || owd?.defaultAccessLevel === 'READ_WRITE';
+
+    const hasBypass = 
+      isPublic ||
+      matrix?.system?.modifyAllData === true || 
+      matrix?.system?.viewAllData === true || 
+      matrix?.objects?.['Candidate']?.modifyAllData === true || 
+      matrix?.objects?.['Candidate']?.viewAllData === true;
+
+    return this.candidatesRepository.findAll(userId, hasBypass);
   }
 
   async findOne(id) {

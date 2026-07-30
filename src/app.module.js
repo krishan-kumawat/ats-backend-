@@ -21,6 +21,7 @@ import { OrgWideDefault } from './entities/org-wide-default.entity.js';
 import { SharingRule } from './entities/sharing-rule.entity.js';
 import { Account } from './entities/account.entity.js';
 import { AccountShare } from './entities/account-share.entity.js';
+import { TabSetting } from './entities/tab-setting.entity.js';
 
 import { ProfilesModule } from './profiles/profiles.module.js';
 import { RolesModule } from './roles/roles.module.js';
@@ -33,6 +34,7 @@ import { JobsModule } from './jobs/jobs.module.js';
 import { CandidatesModule } from './candidates/candidates.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
+import { NavigationModule } from './navigation/navigation.module.js';
 
 @Module({
   imports: [
@@ -60,6 +62,7 @@ import { DepartmentsModule } from './departments/departments.module.js';
         SharingRule,
         Account,
         AccountShare,
+        TabSetting,
       ],
       synchronize: true,
     }),
@@ -75,6 +78,7 @@ import { DepartmentsModule } from './departments/departments.module.js';
     CandidatesModule,
     AuditModule,
     DepartmentsModule,
+    NavigationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

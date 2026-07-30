@@ -2,13 +2,15 @@ import { Injectable, ForbiddenException, Dependencies } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { RECORD_ACCESS_KEY } from '../decorators/record-access.decorator.js';
+import { PermissionsService } from '../../permissions/permissions.service.js';
 
 @Injectable()
-@Dependencies(Reflector, PrismaService)
+@Dependencies(Reflector, PrismaService, PermissionsService)
 export class RecordSharingGuard {
-  constructor(reflector, prismaService) {
+  constructor(reflector, prismaService, permissionsService) {
     this.reflector = reflector;
     this.prismaService = prismaService;
+    this.permissionsService = permissionsService;
   }
 
   async canActivate(context) {
@@ -36,8 +38,12 @@ export class RecordSharingGuard {
       );
     }
 
-    // 1. Super Admin bypass
-    if (user.profile === 'Admin') {
+    // 1. Super Admin bypass (Check system permission modifyAllData or viewAllData for read requests)
+    const matrix = await this.permissionsService.getEffectivePermissions(user.sub);
+    const hasModifyAll = matrix?.system?.modifyAllData === true || matrix?.objects?.[resourceType]?.modifyAllData === true;
+    const hasViewAll = matrix?.system?.viewAllData === true || matrix?.objects?.[resourceType]?.viewAllData === true;
+
+    if (hasModifyAll || (accessLevel === 'READ' && hasViewAll)) {
       return true;
     }
 

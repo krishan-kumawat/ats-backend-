@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Body,
   Patch,
   Param,
@@ -89,5 +90,21 @@ export class ProfilesController {
   @ApiResponse({ status: 404, description: 'Profile not found.' })
   assignPermissions(@Param('id') id, @Body() assignPermissionsDto) {
     return this.profilesService.assignPermissions(id, assignPermissionsDto.permissionIds);
+  }
+
+  @Get(':id/security-settings')
+  @RequireSystemPerm('viewAllData')
+  @ApiOperation({ summary: 'Get all OLS, FLS, and System permissions for a profile' })
+  @ApiResponse({ status: 200, description: 'Return all OLS, FLS, and System settings.' })
+  getSecuritySettings(@Param('id') id) {
+    return this.profilesService.getSecuritySettings(id);
+  }
+
+  @Put(':id/security-settings')
+  @RequireSystemPerm('modifyAllData')
+  @ApiOperation({ summary: 'Update all OLS, FLS, and System permissions for a profile' })
+  @ApiResponse({ status: 200, description: 'Permissions updated successfully.' })
+  updateSecuritySettings(@Param('id') id, @Body() body, @Req() request) {
+    return this.profilesService.updateSecuritySettings(id, body, request.user.sub);
   }
 }

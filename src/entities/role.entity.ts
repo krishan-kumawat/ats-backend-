@@ -13,11 +13,11 @@ export class Role extends SalesforceAuditEntity {
   @Column({ name: 'developer_name', type: 'varchar', unique: true, length: 100, nullable: true })
   developerName: string | null;
 
-  @Column({ name: 'parent_role_id', type: 'uuid', nullable: true })
-  parentRoleId: string | null;
+  @Column({ name: 'parent_id', type: 'uuid', nullable: true })
+  parentId: string | null;
 
   @ManyToOne(() => Role, (role) => role.children, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'parent_role_id' })
+  @JoinColumn({ name: 'parent_id' })
   parent: Role | null;
 
   @OneToMany(() => Role, (role) => role.parent)

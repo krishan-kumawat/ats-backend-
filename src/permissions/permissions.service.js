@@ -21,8 +21,8 @@ export class PermissionsService {
     });
     if (!user) return null;
 
-    // Fetch Profile Base Permission Set
-    const profilePermSet = await this.entityManager.findOne(PermissionSet, {
+    // Fetch Profile Base Permission Sets
+    const profilePermSets = await this.entityManager.find(PermissionSet, {
       where: { profileId: user.profileId },
     });
 
@@ -33,7 +33,9 @@ export class PermissionsService {
     const assignedSetIds = assignments.map((a) => a.permissionSetId);
 
     const activeSetIds = [];
-    if (profilePermSet) activeSetIds.push(profilePermSet.id);
+    if (profilePermSets && profilePermSets.length > 0) {
+      activeSetIds.push(...profilePermSets.map((ps) => ps.id));
+    }
     activeSetIds.push(...assignedSetIds);
 
     const matrix = {
@@ -46,13 +48,13 @@ export class PermissionsService {
       // Query all object permissions linked to active sets
       const objectPermissions = await this.entityManager.find(ObjectPermission, {
         where: { permissionSetId: In(activeSetIds) },
-        relations: ['schemaObject'],
+        relations: { schemaObject: true },
       });
 
       // Query all field permissions linked to active sets
       const fieldPermissions = await this.entityManager.find(FieldPermission, {
         where: { permissionSetId: In(activeSetIds) },
-        relations: ['schemaField', 'schemaField.schemaObject'],
+        relations: { schemaField: { schemaObject: true } },
       });
 
       // Query all system permissions linked to active sets

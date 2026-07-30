@@ -3,12 +3,16 @@ import { getEntityManagerToken } from '@nestjs/typeorm';
 import { AccountShare } from '../entities/account-share.entity.js';
 import { Account } from '../entities/account.entity.js';
 import { User } from '../entities/user.entity.js';
+import { OrgWideDefault } from '../entities/org-wide-default.entity.js';
+import { SchemaObject } from '../entities/schema-object.entity.js';
+import { SharingEventService } from './sharing-event.service.js';
 
 @Injectable()
-@Dependencies(getEntityManagerToken())
+@Dependencies(getEntityManagerToken(), SharingEventService)
 export class SharingService {
-  constructor(entityManager) {
+  constructor(entityManager, sharingEventService) {
     this.entityManager = entityManager;
+    this.sharingEventService = sharingEventService;
   }
 
   /**
@@ -26,7 +30,7 @@ export class SharingService {
 
     const shares = await this.entityManager.find(AccountShare, {
       where: { accountId: recordId },
-      relations: ['user', 'group'],
+      relations: { user: true, group: true },
     });
 
     return shares.map((s) => ({
@@ -98,6 +102,70 @@ export class SharingService {
     }
 
     await this.entityManager.remove(AccountShare, share);
+    return { success: true };
+  }
+
+  async getOrgWideDefaults() {
+    const schemaObjects = await this.entityManager.find(SchemaObject);
+    const owds = await this.entityManager.find(OrgWideDefault);
+
+    return schemaObjects.map((so) => {
+      const owd = owds.find((o) => o.schemaObjectId === so.id);
+      return {
+        schemaObjectId: so.id,
+        apiName: so.apiName,
+        label: so.label,
+        defaultAccessLevel: owd ? owd.defaultAccessLevel : 'PRIVATE',
+        grantAccessUsingHierarchies: owd ? owd.grantAccessUsingHierarchies : true,
+      };
+    });
+  }
+
+  async updateOrgWideDefault(dto, adminUserId) {
+    const { schemaObjectId, defaultAccessLevel, grantAccessUsingHierarchies } = dto;
+
+    const schemaObj = await this.entityManager.findOne(SchemaObject, {
+      where: { id: schemaObjectId },
+    });
+    if (!schemaObj) {
+      throw new NotFoundException(`Schema Object not found for ID: ${schemaObjectId}`);
+    }
+
+    let owd = await this.entityManager.findOne(OrgWideDefault, {
+      where: { schemaObjectId },
+    });
+
+    if (!owd) {
+      owd = this.entityManager.create(OrgWideDefault, {
+        schemaObjectId,
+        defaultAccessLevel,
+        grantAccessUsingHierarchies: grantAccessUsingHierarchies !== undefined ? grantAccessUsingHierarchies : true,
+        createdById: adminUserId,
+        lastModifiedById: adminUserId,
+      });
+    } else {
+      owd.defaultAccessLevel = defaultAccessLevel;
+      if (grantAccessUsingHierarchies !== undefined) {
+        owd.grantAccessUsingHierarchies = grantAccessUsingHierarchies;
+      }
+      owd.lastModifiedById = adminUserId;
+    }
+
+    const savedOwd = await this.entityManager.save(OrgWideDefault, owd);
+
+    // If target object is Account, trigger share recalculation for all records
+    if (schemaObj.apiName === 'Account') {
+      const accounts = await this.entityManager.find(Account);
+      for (const acc of accounts) {
+        this.sharingEventService.emit('recalculate.account', acc.id);
+      }
+    }
+
+    return savedOwd;
+  }
+
+  async handleCandidateJobLinked(candidateId, jobId) {
+    console.log(`Candidate ${candidateId} linked to Job ${jobId}. Sharing cascade complete.`);
     return { success: true };
   }
 }

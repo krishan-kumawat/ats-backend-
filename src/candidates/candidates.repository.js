@@ -12,9 +12,9 @@ export class CandidatesRepository {
     return this.prismaService.candidate.create({ data });
   }
 
-  async findAll(userId, userProfile) {
+  async findAll(userId, hasBypass) {
     // Super Admin bypass: retrieve all candidates
-    if (userProfile === 'Admin') {
+    if (hasBypass) {
       return this.prismaService.candidate.findMany({
         where: { deletedAt: null },
         include: {

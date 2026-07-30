@@ -1,11 +1,16 @@
 import { Injectable, NotFoundException, Dependencies } from '@nestjs/common';
 import { JobsRepository } from './jobs.repository.js';
+import { PermissionsService } from '../permissions/permissions.service.js';
+import { getEntityManagerToken } from '@nestjs/typeorm';
+import { OrgWideDefault } from '../entities/org-wide-default.entity.js';
 
 @Injectable()
-@Dependencies(JobsRepository)
+@Dependencies(JobsRepository, PermissionsService, getEntityManagerToken())
 export class JobsService {
-  constructor(jobsRepository) {
+  constructor(jobsRepository, permissionsService, entityManager) {
     this.jobsRepository = jobsRepository;
+    this.permissionsService = permissionsService;
+    this.entityManager = entityManager;
   }
 
   async create(createJobDto, ownerId) {
@@ -18,8 +23,23 @@ export class JobsService {
     });
   }
 
-  async findAll(userId, userProfile) {
-    return this.jobsRepository.findAll(userId, userProfile);
+  async findAll(userId) {
+    const matrix = await this.permissionsService.getEffectivePermissions(userId);
+
+    const owd = await this.entityManager.findOne(OrgWideDefault, {
+      where: { schemaObject: { apiName: 'Job' } },
+      relations: { schemaObject: true },
+    });
+    const isPublic = owd?.defaultAccessLevel === 'READ_ONLY' || owd?.defaultAccessLevel === 'READ_WRITE';
+
+    const hasBypass = 
+      isPublic ||
+      matrix?.system?.modifyAllData === true || 
+      matrix?.system?.viewAllData === true || 
+      matrix?.objects?.['Job']?.modifyAllData === true || 
+      matrix?.objects?.['Job']?.viewAllData === true;
+
+    return this.jobsRepository.findAll(userId, hasBypass);
   }
 
   async findOne(id) {

@@ -27,11 +27,11 @@ export class RecordSharingHelper {
     while (currentId) {
       const role = await this.entityManager.findOne(Role, {
         where: { id: currentId },
-        select: ['id', 'parentRoleId'],
+        select: ['id', 'parentId'],
       });
-      if (role && role.parentRoleId) {
-        parentRoleIds.push(role.parentRoleId);
-        currentId = role.parentRoleId;
+      if (role && role.parentId) {
+        parentRoleIds.push(role.parentId);
+        currentId = role.parentId;
       } else {
         break;
       }

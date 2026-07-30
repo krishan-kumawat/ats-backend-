@@ -44,7 +44,7 @@ export class CandidatesController {
   @ApiOperation({ summary: 'List all candidates visible to the user' })
   @ApiResponse({ status: 200, description: 'List of candidates returned.' })
   findAll(@Req() request) {
-    return this.candidatesService.findAll(request.user.sub, request.user.profile);
+    return this.candidatesService.findAll(request.user.sub);
   }
 
   @Get(':id')

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Delete,
   Body,
   Query,
@@ -12,6 +13,9 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { SharingService } from './sharing.service.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
+import { SystemPermGuard } from '../common/guards/system-perm.guard.js';
+import { RequireSystemPerm } from '../common/decorators/require-system-perm.decorator.js';
+import { UpdateOwdDto } from './dto/update-owd.dto.js';
 
 @ApiTags('Sharing')
 @ApiBearerAuth()
@@ -55,5 +59,22 @@ export class SharingController {
     @Query('targetUserId') targetUserId,
   ) {
     return this.sharingService.removeManualShare(recordId, objectType, targetUserId);
+  }
+
+  @Get('owd')
+  @ApiOperation({ summary: 'Get Org-Wide Defaults (OWD) settings for all objects' })
+  @ApiResponse({ status: 200, description: 'Successfully returned OWD settings.' })
+  getOrgWideDefaults() {
+    return this.sharingService.getOrgWideDefaults();
+  }
+
+  @Put('owd')
+  @UseGuards(SystemPermGuard)
+  @RequireSystemPerm('modifyAllData')
+  @ApiOperation({ summary: 'Update Org-Wide Default (OWD) settings for an object' })
+  @ApiResponse({ status: 200, description: 'OWD updated and sharing recalculations triggered.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. ModifyAllData permission required.' })
+  updateOrgWideDefault(@Body() updateOwdDto, @Req() request) {
+    return this.sharingService.updateOrgWideDefault(updateOwdDto, request.user.sub);
   }
 }

@@ -24,25 +24,25 @@ async function main() {
     const leadRoleId = crypto.randomUUID();
     const recruiterRoleId = crypto.randomUUID();
 
-    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_role_id") VALUES ('${ceoRoleId}', 'CEO', 'CEO', NULL) ON CONFLICT ("name") DO NOTHING;`);
+    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_id") VALUES ('${ceoRoleId}', 'CEO', 'CEO', NULL) ON CONFLICT ("name") DO NOTHING;`);
     
     // Retrieve actual CEO Role ID in case it already existed
     const ceoRoleRes = await client.query('SELECT "id" FROM "roles" WHERE "name" = \'CEO\'');
     const dbCeoRoleId = ceoRoleRes.rows[0].id;
 
-    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_role_id") VALUES ('${vpRoleId}', 'VP of Recruitment', 'VP_of_Recruitment', '${dbCeoRoleId}') ON CONFLICT ("name") DO NOTHING;`);
+    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_id") VALUES ('${vpRoleId}', 'VP of Recruitment', 'VP_of_Recruitment', '${dbCeoRoleId}') ON CONFLICT ("name") DO NOTHING;`);
     const vpRoleRes = await client.query('SELECT "id" FROM "roles" WHERE "name" = \'VP of Recruitment\'');
     const dbVpRoleId = vpRoleRes.rows[0].id;
 
-    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_role_id") VALUES ('${directorRoleId}', 'Recruitment Director', 'Recruitment_Director', '${dbVpRoleId}') ON CONFLICT ("name") DO NOTHING;`);
+    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_id") VALUES ('${directorRoleId}', 'Recruitment Director', 'Recruitment_Director', '${dbVpRoleId}') ON CONFLICT ("name") DO NOTHING;`);
     const dirRoleRes = await client.query('SELECT "id" FROM "roles" WHERE "name" = \'Recruitment Director\'');
     const dbDirRoleId = dirRoleRes.rows[0].id;
 
-    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_role_id") VALUES ('${leadRoleId}', 'Lead Recruiter', 'Lead_Recruiter', '${dbDirRoleId}') ON CONFLICT ("name") DO NOTHING;`);
+    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_id") VALUES ('${leadRoleId}', 'Lead Recruiter', 'Lead_Recruiter', '${dbDirRoleId}') ON CONFLICT ("name") DO NOTHING;`);
     const leadRoleRes = await client.query('SELECT "id" FROM "roles" WHERE "name" = \'Lead Recruiter\'');
     const dbLeadRoleId = leadRoleRes.rows[0].id;
 
-    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_role_id") VALUES ('${recruiterRoleId}', 'Recruiter', 'Recruiter', '${dbLeadRoleId}') ON CONFLICT ("name") DO NOTHING;`);
+    await client.query(`INSERT INTO "roles" ("id", "name", "developer_name", "parent_id") VALUES ('${recruiterRoleId}', 'Recruiter', 'Recruiter', '${dbLeadRoleId}') ON CONFLICT ("name") DO NOTHING;`);
     const recRoleRes = await client.query('SELECT "id" FROM "roles" WHERE "name" = \'Recruiter\'');
     const dbRecruiterRoleId = recRoleRes.rows[0].id;
 

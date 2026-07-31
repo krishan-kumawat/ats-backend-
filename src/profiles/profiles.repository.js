@@ -13,7 +13,7 @@ export class ProfilesRepository {
   }
 
   async findAll() {
-    return this.prismaService.profile.findMany({
+    const profiles = await this.prismaService.profile.findMany({
       where: { deletedAt: null },
       include: {
         profilePermissions: {
@@ -21,10 +21,20 @@ export class ProfilesRepository {
         },
       },
     });
+    const raws = await this.prismaService.$queryRawUnsafe(
+      `SELECT id, is_custom FROM profiles WHERE deleted_at IS NULL`
+    );
+    for (const profile of profiles) {
+      const match = raws.find((r) => r.id === profile.id);
+      if (match) {
+        profile.isCustom = match.is_custom;
+      }
+    }
+    return profiles;
   }
 
   async findById(id) {
-    return this.prismaService.profile.findUnique({
+    const profile = await this.prismaService.profile.findUnique({
       where: { id, deletedAt: null },
       include: {
         profilePermissions: {
@@ -32,6 +42,16 @@ export class ProfilesRepository {
         },
       },
     });
+    if (profile) {
+      const raw = await this.prismaService.$queryRawUnsafe(
+        `SELECT is_custom FROM profiles WHERE id = $1`,
+        id
+      );
+      if (raw && raw[0]) {
+        profile.isCustom = raw[0].is_custom;
+      }
+    }
+    return profile;
   }
 
   async findByName(name) {

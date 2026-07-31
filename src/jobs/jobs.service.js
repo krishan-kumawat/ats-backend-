@@ -3,14 +3,16 @@ import { JobsRepository } from './jobs.repository.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
 import { getEntityManagerToken } from '@nestjs/typeorm';
 import { OrgWideDefault } from '../entities/org-wide-default.entity.js';
+import { SharingService } from '../sharing/sharing.service.js';
 
 @Injectable()
-@Dependencies(JobsRepository, PermissionsService, getEntityManagerToken())
+@Dependencies(JobsRepository, PermissionsService, getEntityManagerToken(), SharingService)
 export class JobsService {
-  constructor(jobsRepository, permissionsService, entityManager) {
+  constructor(jobsRepository, permissionsService, entityManager, sharingService) {
     this.jobsRepository = jobsRepository;
     this.permissionsService = permissionsService;
     this.entityManager = entityManager;
+    this.sharingService = sharingService;
   }
 
   async create(createJobDto, ownerId) {
@@ -39,7 +41,17 @@ export class JobsService {
       matrix?.objects?.['Job']?.modifyAllData === true || 
       matrix?.objects?.['Job']?.viewAllData === true;
 
-    return this.jobsRepository.findAll(userId, hasBypass);
+    const jobs = await this.jobsRepository.findAll(userId, hasBypass);
+
+    return Promise.all(
+      jobs.map(async (job) => {
+        const access = await this.sharingService.getRecordAccess(job.id, 'Job', userId);
+        return {
+          ...job,
+          userRecordAccess: access,
+        };
+      })
+    );
   }
 
   async findOne(id) {

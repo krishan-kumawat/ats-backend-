@@ -40,7 +40,17 @@ export class CandidatesService {
       matrix?.objects?.['Candidate']?.modifyAllData === true || 
       matrix?.objects?.['Candidate']?.viewAllData === true;
 
-    return this.candidatesRepository.findAll(userId, hasBypass);
+    const candidates = await this.candidatesRepository.findAll(userId, hasBypass);
+
+    return Promise.all(
+      candidates.map(async (cand) => {
+        const access = await this.sharingService.getRecordAccess(cand.id, 'Candidate', userId);
+        return {
+          ...cand,
+          userRecordAccess: access,
+        };
+      })
+    );
   }
 
   async findOne(id) {

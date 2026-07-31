@@ -211,11 +211,17 @@ export class ProfilesService {
   async getSecuritySettings(profileId) {
     const profile = await this.findOne(profileId);
     
-    const pset = await this.entityManager.findOne(PermissionSet, {
+    let pset = await this.entityManager.findOne(PermissionSet, {
       where: { profileId },
     });
     if (!pset) {
-      throw new NotFoundException(`Base Permission Set not found for profile: ${profile.name}`);
+      pset = this.entityManager.create(PermissionSet, {
+        name: `${profile.name} BaseSet`,
+        description: `Base permission set for profile ${profile.name}`,
+        isCustom: profile.isCustom,
+        profileId,
+      });
+      await this.entityManager.save(PermissionSet, pset);
     }
 
     const psetId = pset.id;
@@ -314,11 +320,17 @@ export class ProfilesService {
       throw new ForbiddenException('Cannot modify permissions of standard system profiles');
     }
 
-    const pset = await this.entityManager.findOne(PermissionSet, {
+    let pset = await this.entityManager.findOne(PermissionSet, {
       where: { profileId },
     });
     if (!pset) {
-      throw new NotFoundException(`Base Permission Set not found for profile: ${profile.name}`);
+      pset = this.entityManager.create(PermissionSet, {
+        name: `${profile.name} BaseSet`,
+        description: `Base permission set for profile ${profile.name}`,
+        isCustom: profile.isCustom,
+        profileId,
+      });
+      await this.entityManager.save(PermissionSet, pset);
     }
 
     const psetId = pset.id;

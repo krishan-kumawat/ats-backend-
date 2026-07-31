@@ -27,7 +27,7 @@ export class RecordSharingHelper {
     while (currentId) {
       const role = await this.entityManager.findOne(Role, {
         where: { id: currentId },
-        select: ['id', 'parentId'],
+        select: { id: true, parentId: true },
       });
       if (role && role.parentId) {
         parentRoleIds.push(role.parentId);
@@ -49,7 +49,7 @@ export class RecordSharingHelper {
     // 1. Direct user memberships
     const directUserMembers = await this.entityManager.find(GroupUserMember, {
       where: { userId },
-      select: ['groupId'],
+      select: { groupId: true },
     });
     directUserMembers.forEach((m) => groupIds.add(m.groupId));
 
@@ -58,7 +58,7 @@ export class RecordSharingHelper {
       // Find direct role group memberships
       const roleMembers = await this.entityManager.find(GroupRoleMember, {
         where: { roleId },
-        select: ['groupId', 'includeSubordinates'],
+        select: { groupId: true, includeSubordinates: true },
       });
       roleMembers.forEach((m) => groupIds.add(m.groupId));
 

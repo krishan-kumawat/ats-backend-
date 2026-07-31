@@ -57,8 +57,20 @@ export class SharingController {
     @Query('recordId') recordId,
     @Query('objectType') objectType,
     @Query('targetUserId') targetUserId,
+    @Req() request,
   ) {
-    return this.sharingService.removeManualShare(recordId, objectType, targetUserId);
+    return this.sharingService.removeManualShare(recordId, objectType, targetUserId, request.user.sub);
+  }
+
+  @Get('record-access')
+  @ApiOperation({ summary: 'Calculate dynamic record-level action access for the current user' })
+  @ApiResponse({ status: 200, description: 'Successfully evaluated access levels.' })
+  getRecordAccess(
+    @Query('recordId') recordId,
+    @Query('objectType') objectType,
+    @Req() request,
+  ) {
+    return this.sharingService.getRecordAccess(recordId, objectType, request.user.sub);
   }
 
   @Get('owd')

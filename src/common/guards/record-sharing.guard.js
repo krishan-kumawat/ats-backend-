@@ -98,7 +98,7 @@ export class RecordSharingGuard {
           userId_resourceType_resourceId: {
             userId,
             resourceType,
-            resourceId,
+            resourceId: recordId,
           },
         },
       });

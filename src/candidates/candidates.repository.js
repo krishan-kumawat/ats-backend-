@@ -82,6 +82,18 @@ export class CandidatesRepository {
         candidateJobs: {
           include: { job: true },
         },
+        createdBy: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        lastModifiedBy: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
   }

@@ -54,6 +54,18 @@ export class UsersRepository {
         department: true,
         role: true,
         profile: true,
+        creator: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        updater: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
         userPermissionSets: {
           include: {
             permissionSet: {

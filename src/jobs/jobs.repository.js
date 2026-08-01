@@ -76,6 +76,18 @@ export class JobsRepository {
             email: true,
           },
         },
+        createdBy: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        lastModifiedBy: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
   }

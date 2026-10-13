@@ -2,17 +2,22 @@ import { NestFactory } from '@nestjs/core';
 import { VersioningType, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
+ 
   // Set global API prefix
   app.setGlobalPrefix('api');
+
 
   // Enable URI-based versioning (adds /v1 to all endpoints by default)
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
   });
+
 
   // Enable global validation pipe
   app.useGlobalPipes(
@@ -23,9 +28,11 @@ async function bootstrap() {
     })
   );
 
+
   // Enable global Prisma database exception handler filter
   const { PrismaExceptionFilter } = await import('./common/filters/prisma-exception.filter.js');
   app.useGlobalFilters(new PrismaExceptionFilter());
+
 
   // Setup Swagger API Documentation
   const { SwaggerModule, DocumentBuilder } = await import('@nestjs/swagger');
@@ -35,9 +42,10 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .build();
-  
+ 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
+
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

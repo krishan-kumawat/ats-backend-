@@ -18,5 +18,9 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "exclude": ["prisma.config.ts", "dist", "node_modules"]
 }
+
+
+

@@ -19,8 +19,13 @@
                   "var jsonData = pm.response.json();",
                   "if (jsonData.accessToken) {",
                   "    pm.environment.set(\"accessToken\", jsonData.accessToken);",
-                  "    console.log(\"Access token saved to environment variables!\");",
-                  "}"
+                  "    pm.collectionVariables.set(\"accessToken\", jsonData.accessToken);",
+                  "}",
+                  "if (jsonData.refreshToken) {",
+                  "    pm.environment.set(\"refreshToken\", jsonData.refreshToken);",
+                  "    pm.collectionVariables.set(\"refreshToken\", jsonData.refreshToken);",
+                  "}",
+                  "console.log(\"Tokens saved to Postman environment and collection variables!\");"
                 ],
                 "type": "text/javascript"
               }

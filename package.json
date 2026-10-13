@@ -17,7 +17,15 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
+    "seed:schema": "node prisma/seed-schema-fields.js",
+    "seed": "node prisma/seed-schema-fields.js && node prisma/seed.js",
+    "seed:tabs": "node prisma/seed-tabs.js",
+    "db:reset": "prisma db push --force-reset && npm run seed",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.4",
@@ -85,3 +93,6 @@
     "testEnvironment": "node"
   }
 }
+
+
+

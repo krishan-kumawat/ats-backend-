@@ -1,9 +1,10 @@
 import pg from 'pg';
 import crypto from 'crypto';
+import 'dotenv/config';
 
 const { Client } = pg;
 
-const dbUrl = process.env.DATABASE_URL || "postgresql://postgres:root@localhost:5432/TalentVibesATS?schema=public";
+const dbUrl = process.env.DATABASE_URL || process.env.LOCAL_DATABASE_URL || "postgresql://postgres:root@localhost:5432/ATS%20TV?schema=public";
 
 async function main() {
   console.log('Connecting to database:', dbUrl);

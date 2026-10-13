@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { LoggerMiddleware } from './common/middleware/logger.middleware.js';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
@@ -23,6 +24,7 @@ import { Account } from './entities/account.entity.js';
 import { AccountShare } from './entities/account-share.entity.js';
 import { TabSetting } from './entities/tab-setting.entity.js';
 
+
 import { ProfilesModule } from './profiles/profiles.module.js';
 import { RolesModule } from './roles/roles.module.js';
 import { PermissionsModule } from './permissions/permissions.module.js';
@@ -36,6 +38,7 @@ import { AuditModule } from './audit/audit.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
 import { NavigationModule } from './navigation/navigation.module.js';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -43,7 +46,12 @@ import { NavigationModule } from './navigation/navigation.module.js';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: process.env.DATABASE_URL,
+      host: process.env.DB_HOST || 'localhost',
+      port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 5432,
+      username: process.env.DB_USERNAME || process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'root',
+      database: process.env.DB_NAME || 'postgres',
+      url: process.env.DATABASE_URL || process.env.LOCAL_DATABASE_URL,
       entities: [
         User,
         Role,
@@ -83,4 +91,8 @@ import { NavigationModule } from './navigation/navigation.module.js';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

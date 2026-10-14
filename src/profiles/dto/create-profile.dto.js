@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProfileDto {
@@ -11,6 +11,16 @@ export class CreateProfileDto {
   @IsString()
   @IsOptional()
   description;
+
+  @ApiProperty({ description: 'Optional source profile UUID to clone permissions from', example: '13e3a51e-d293-41a4-a33a-e3b58fdf91e0', required: false })
+  @IsUUID()
+  @IsOptional()
+  sourceProfileId;
+
+  @ApiProperty({ description: 'Optional source profile name to clone permissions from', example: 'ATS Recruiter', required: false })
+  @IsString()
+  @IsOptional()
+  sourceProfileName;
 }
 
 export class UpdateProfileDto {

@@ -144,7 +144,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Custom Recruitment Lead\",\n  \"description\": \"Has specialized custom permissions for jobs and candidates.\"\n}"
+              "raw": "{\n  \"name\": \"Custom Recruitment Lead\",\n  \"description\": \"Has specialized custom permissions cloned from ATS Recruiter template.\",\n  \"sourceProfileName\": \"ATS Recruiter\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/profiles",
@@ -154,7 +154,8 @@
               "path": [
                 "profiles"
               ]
-            }
+            },
+            "description": "Create a new custom profile derived from a source template profile. Accepts optional `sourceProfileName` (e.g. \"ATS Recruiter\") or `sourceProfileId` (UUID) to clone Base Permission Set, OLS, FLS, System Permissions, and Tab Settings."
           },
           "response": []
         },

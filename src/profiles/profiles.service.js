@@ -20,12 +20,30 @@ export class ProfilesService {
   }
 
   async create(createProfileDto, creatorId) {
-    const existing = await this.profilesRepository.findByName(createProfileDto.name);
+    const { sourceProfileId, sourceProfileName, ...profileData } = createProfileDto;
+
+    // Check if a source profile was specified to clone permissions from
+    if (sourceProfileId || sourceProfileName) {
+      let sourceProfile;
+      if (sourceProfileId) {
+        sourceProfile = await this.findOne(sourceProfileId);
+      } else {
+        sourceProfile = await this.profilesRepository.findByName(sourceProfileName);
+        if (!sourceProfile) {
+          throw new NotFoundException(`Source profile with name '${sourceProfileName}' not found`);
+        }
+      }
+
+      return this.cloneProfile(sourceProfile.id, profileData, creatorId);
+    }
+
+    const existing = await this.profilesRepository.findByName(profileData.name);
     if (existing) {
-      throw new ConflictException(`Profile with name '${createProfileDto.name}' already exists`);
+      throw new ConflictException(`Profile with name '${profileData.name}' already exists`);
     }
     return this.profilesRepository.create({
-      ...createProfileDto,
+      ...profileData,
+      isCustom: profileData.isCustom ?? true,
       createdById: creatorId,
       lastModifiedById: creatorId,
     });
@@ -129,10 +147,12 @@ export class ProfilesService {
   async cloneProfile(sourceProfileId, cloneProfileDto, creatorId) {
     const sourceProfile = await this.findOne(sourceProfileId);
 
+    const { sourceProfileId: _id, sourceProfileName: _name, ...cloneData } = cloneProfileDto;
+
     // 1. Create the new profile record
     const newProfile = await this.create({
-      name: cloneProfileDto.name,
-      description: cloneProfileDto.description || `Cloned from ${sourceProfile.name}`,
+      name: cloneData.name,
+      description: cloneData.description || `Cloned from ${sourceProfile.name}`,
       isCustom: true,
     }, creatorId);
 
@@ -203,8 +223,25 @@ export class ProfilesService {
         });
         await this.entityManager.save('system_permissions', newSp);
       }
+
+      // 7. Duplicate Tab Settings
+      const tabSettings = await this.entityManager.find('tab_settings', {
+        where: { permissionSetId: sourcePermSet.id },
+      });
+      for (const ts of tabSettings) {
+        const newTs = this.entityManager.create('tab_settings', {
+          permissionSetId: newPermSet.id,
+          schemaObjectId: ts.schemaObjectId,
+          isVisible: ts.isVisible,
+          precedenceOrder: ts.precedenceOrder,
+          createdById: creatorId,
+          lastModifiedById: creatorId,
+        });
+        await this.entityManager.save('tab_settings', newTs);
+      }
     }
 
+    await this.permissionsService.invalidateCacheForProfile(newProfile.id);
     return newProfile;
   }
 

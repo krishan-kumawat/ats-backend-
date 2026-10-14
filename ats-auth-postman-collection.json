@@ -439,15 +439,20 @@
           }
         },
         {
-          "name": "3.2 Create Profile",
+          "name": "3.2 Create Profile (From Template Source Profile)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
                   "var jsonData = pm.response.json();",
                   "if (jsonData && jsonData.id) {",
                   "    pm.collectionVariables.set(\"profileId\", jsonData.id);",
+                  "    console.log(\"✅ Profile created and ID captured: \" + jsonData.id);",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -464,7 +469,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Custom HR Profile\",\n  \"description\": \"Custom profile for junior recruiters\"\n}"
+              "raw": "{\n  \"name\": \"Custom HR Profile\",\n  \"description\": \"Custom profile derived from ATS Recruiter template\",\n  \"sourceProfileName\": \"ATS Recruiter\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/profiles",
@@ -474,7 +479,53 @@
               "path": [
                 "profiles"
               ]
+            },
+            "description": "Creates a new custom profile derived from an existing source template. Supports `sourceProfileName` (e.g. \"ATS Recruiter\") or `sourceProfileId` (UUID). Automatically clones the source profile's Base Permission Set, Object-Level Security (OLS), Field-Level Security (FLS), System Permissions, and Tab Visibility Settings. Returns the created profile with its `id` for subsequent security configuration."
+          }
+        },
+        {
+          "name": "3.2b Create Profile (By Source Profile ID)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"profileId\", jsonData.id);",
+                  "    console.log(\"✅ Profile created via sourceProfileId: \" + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
             }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom Manager Profile\",\n  \"description\": \"Custom profile cloned by template UUID\",\n  \"sourceProfileId\": \"{{profileId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles"
+              ]
+            },
+            "description": "Alternative creation request demonstrating the use of `sourceProfileId` UUID instead of `sourceProfileName`."
           }
         },
         {

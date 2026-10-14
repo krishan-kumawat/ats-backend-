@@ -9,7 +9,13 @@ export class JobsRepository {
   }
 
   async create(data) {
-    return this.prismaService.job.create({ data });
+    const { budgetLimit, budget, ...rest } = data;
+    const finalBudget = budget !== undefined ? budget : budgetLimit;
+    const jobData = {
+      ...rest,
+      ...(finalBudget !== undefined ? { budget: finalBudget !== null ? Number(finalBudget) : null } : {}),
+    };
+    return this.prismaService.job.create({ data: jobData });
   }
 
   async findAll(userId, hasBypass) {
@@ -93,9 +99,15 @@ export class JobsRepository {
   }
 
   async update(id, data) {
+    const { budgetLimit, budget, ...rest } = data;
+    const finalBudget = budget !== undefined ? budget : budgetLimit;
+    const jobData = {
+      ...rest,
+      ...(finalBudget !== undefined ? { budget: finalBudget !== null ? Number(finalBudget) : null } : {}),
+    };
     return this.prismaService.job.update({
       where: { id },
-      data,
+      data: jobData,
     });
   }
 

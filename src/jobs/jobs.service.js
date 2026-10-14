@@ -16,13 +16,21 @@ export class JobsService {
   }
 
   async create(createJobDto, ownerId) {
-    return this.jobsRepository.create({
-      ...createJobDto,
+    const { budgetLimit, budget, ...rest } = createJobDto;
+    const finalBudget = budget !== undefined ? budget : budgetLimit;
+
+    const job = await this.jobsRepository.create({
+      ...rest,
+      budget: finalBudget !== undefined && finalBudget !== null ? Number(finalBudget) : null,
       ownerId,
       createdById: ownerId,
       lastModifiedById: ownerId,
       status: 'Draft',
     });
+    return {
+      ...job,
+      budgetLimit: job.budget,
+    };
   }
 
   async findAll(userId) {
@@ -48,6 +56,7 @@ export class JobsService {
         const access = await this.sharingService.getRecordAccess(job.id, 'Job', userId);
         return {
           ...job,
+          budgetLimit: job.budget,
           userRecordAccess: access,
         };
       })
@@ -59,15 +68,30 @@ export class JobsService {
     if (!job) {
       throw new NotFoundException(`Job with ID '${id}' not found`);
     }
-    return job;
+    return {
+      ...job,
+      budgetLimit: job.budget,
+    };
   }
 
   async update(id, updateJobDto, modifierId) {
     await this.findOne(id);
-    return this.jobsRepository.update(id, {
-      ...updateJobDto,
+    const { budgetLimit, budget, ...rest } = updateJobDto;
+    const finalBudget = budget !== undefined ? budget : budgetLimit;
+
+    const payload = {
+      ...rest,
       lastModifiedById: modifierId,
-    });
+    };
+    if (finalBudget !== undefined) {
+      payload.budget = finalBudget !== null ? Number(finalBudget) : null;
+    }
+
+    const job = await this.jobsRepository.update(id, payload);
+    return {
+      ...job,
+      budgetLimit: job.budget,
+    };
   }
 
   async remove(id) {

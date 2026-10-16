@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   Dependencies,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JobsService } from './jobs.service.js';
@@ -33,7 +34,11 @@ export class JobsController {
   @CheckOls('Job', 'CREATE')
   @ApiOperation({ summary: 'Create a new job posting' })
   @ApiResponse({ status: 201, description: 'Job successfully created.' })
-  create(@Body() createJobDto, @Req() request) {
+  create(
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: CreateJobDto }))
+    createJobDto,
+    @Req() request
+  ) {
     return this.jobsService.create(createJobDto, request.user.sub);
   }
 
@@ -63,7 +68,12 @@ export class JobsController {
   @ApiResponse({ status: 200, description: 'Job updated.' })
   @ApiResponse({ status: 403, description: 'Forbidden. No edit access.' })
   @ApiResponse({ status: 404, description: 'Job not found.' })
-  update(@Param('id') id, @Body() updateJobDto, @Req() request) {
+  update(
+    @Param('id') id,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: UpdateJobDto }))
+    updateJobDto,
+    @Req() request
+  ) {
     return this.jobsService.update(id, updateJobDto, request.user.sub);
   }
 

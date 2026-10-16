@@ -1331,7 +1331,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Senior Full Stack Engineer\",\n  \"description\": \"Looking for a Senior Engineer with NestJS, React, and PostgreSQL experience.\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"budget\": 160000,\n  \"status\": \"Open\"\n}"
+              "raw": "{\n  \"title\": \"Senior Full Stack Engineer\",\n  \"description\": \"Looking for a Senior Engineer with NestJS, React, and PostgreSQL experience.\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"budgetLimit\": 160000,\n  \"workMode\": \"Hybrid\",\n  \"salaryMin\": 120000,\n  \"salaryMax\": 160000\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/jobs",
@@ -1341,7 +1341,8 @@
               "path": [
                 "jobs"
               ]
-            }
+            },
+            "description": "Create a new job posting with title, description, department, budgetLimit, workMode (On-site, Remote, Hybrid), salaryMin, and salaryMax."
           }
         },
         {
@@ -1373,7 +1374,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Lead Full Stack Engineer\",\n  \"budget\": 180000,\n  \"status\": \"Open\"\n}"
+              "raw": "{\n  \"title\": \"Lead Full Stack Engineer\",\n  \"workMode\": \"Remote\",\n  \"salaryMin\": 130000,\n  \"salaryMax\": 175000,\n  \"status\": \"Open\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/jobs/{{jobId}}",
@@ -1384,7 +1385,8 @@
                 "jobs",
                 "{{jobId}}"
               ]
-            }
+            },
+            "description": "Update existing job details including workMode, salaryMin, salaryMax, status, title, description, or budgetLimit."
           }
         },
         {

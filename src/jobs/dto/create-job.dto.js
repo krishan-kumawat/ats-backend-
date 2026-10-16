@@ -1,6 +1,5 @@
-import { IsString, IsNotEmpty, IsOptional, IsUUID, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsUUID, IsNumber, IsIn, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-
 
 export class CreateJobDto {
   @ApiProperty({ description: 'The title of the job opening', example: 'Senior NestJS Developer' })
@@ -34,6 +33,38 @@ export class CreateJobDto {
   @IsNumber()
   @IsOptional()
   budgetLimit;
+
+  @ApiProperty({
+    description: 'Work mode arrangement',
+    enum: ['On-site', 'Remote', 'Hybrid'],
+    example: 'On-site',
+    default: 'On-site',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @IsIn(['On-site', 'Remote', 'Hybrid'])
+  workMode;
+
+  @ApiProperty({
+    description: 'Minimum salary (must be >= 0)',
+    example: 80000,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  salaryMin;
+
+  @ApiProperty({
+    description: 'Maximum salary (must be >= salaryMin)',
+    example: 120000,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  salaryMax;
 }
 
 export class UpdateJobDto {
@@ -73,7 +104,40 @@ export class UpdateJobDto {
   @IsString()
   @IsOptional()
   status;
+
+  @ApiProperty({
+    description: 'Work mode arrangement',
+    enum: ['On-site', 'Remote', 'Hybrid'],
+    example: 'On-site',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  @IsIn(['On-site', 'Remote', 'Hybrid'])
+  workMode;
+
+  @ApiProperty({
+    description: 'Minimum salary (must be >= 0)',
+    example: 80000,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  salaryMin;
+
+  @ApiProperty({
+    description: 'Maximum salary (must be >= salaryMin)',
+    example: 120000,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  @Min(0)
+  salaryMax;
 }
+
+
 
 
 

@@ -129,6 +129,9 @@ model Job {
   description      String?   @db.Text
   status           String    @default("Draft") @db.VarChar(50)
   budget           Float?
+  workMode         String?   @default("On-site") @map("work_mode") @db.VarChar(50)
+  salaryMin        Decimal?  @map("salary_min") @db.Decimal(12, 2)
+  salaryMax        Decimal?  @map("salary_max") @db.Decimal(12, 2)
   departmentId     String?   @map("department_id") @db.Uuid
   ownerId          String    @map("owner_id") @db.Uuid
   createdById      String?   @map("created_by_id") @db.Uuid

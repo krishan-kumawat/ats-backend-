@@ -12,6 +12,12 @@ export class CandidatesRepository {
     return this.prismaService.candidate.create({ data });
   }
 
+  async findJobById(jobId) {
+    return this.prismaService.job.findUnique({
+      where: { id: jobId, deletedAt: null },
+    });
+  }
+
   async findAll(userId, hasBypass) {
     // Super Admin bypass: retrieve all candidates
     if (hasBypass) {

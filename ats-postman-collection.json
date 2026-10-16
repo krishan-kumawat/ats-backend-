@@ -1469,7 +1469,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Ananya\",\n  \"lastName\": \"Iyer\",\n  \"email\": \"ananya.iyer@example.com\",\n  \"phone\": \"+919876543210\",\n  \"skills\": [\n    \"Node.js\",\n    \"NestJS\",\n    \"PostgreSQL\",\n    \"TypeScript\"\n  ]\n}"
+              "raw": "{\n  \"jobId\": \"{{jobId}}\",\n  \"firstName\": \"Ananya\",\n  \"lastName\": \"Iyer\",\n  \"email\": \"ananya.iyer@example.com\",\n  \"phone\": \"+919876543210\",\n  \"currentLocation\": \"Bengaluru, India\",\n  \"totalExperience\": 5.5,\n  \"currentCompany\": \"Acme Tech Solutions\",\n  \"currentDesignation\": \"Senior Software Engineer\",\n  \"linkedinUrl\": \"https://linkedin.com/in/ananyaiyer\",\n  \"source\": \"LinkedIn\",\n  \"candidateStatus\": \"NEW\",\n  \"resumeUrl\": \"https://storage.example.com/resumes/ananya-iyer.pdf\",\n  \"skills\": [\n    \"Node.js\",\n    \"NestJS\",\n    \"PostgreSQL\",\n    \"TypeScript\"\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/candidates",
@@ -1479,7 +1479,8 @@
               "path": [
                 "candidates"
               ]
-            }
+            },
+            "description": "Create a new candidate profile with required jobId, personal details, location, experience, company, designation, linkedinUrl, source, candidateStatus, and resumeUrl."
           }
         },
         {
@@ -1511,7 +1512,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Ananya\",\n  \"lastName\": \"Iyer Sharma\",\n  \"skills\": [\n    \"Node.js\",\n    \"NestJS\",\n    \"PostgreSQL\",\n    \"TypeScript\",\n    \"AWS\"\n  ]\n}"
+              "raw": "{\n  \"firstName\": \"Ananya\",\n  \"lastName\": \"Iyer Sharma\",\n  \"currentLocation\": \"Bengaluru, India\",\n  \"totalExperience\": 6,\n  \"currentCompany\": \"Global Cloud Corp\",\n  \"currentDesignation\": \"Lead Engineer\",\n  \"linkedinUrl\": \"https://linkedin.com/in/ananyaiyer\",\n  \"source\": \"LinkedIn\",\n  \"candidateStatus\": \"ACTIVE\",\n  \"resumeUrl\": \"https://storage.example.com/resumes/ananya-iyer-v2.pdf\",\n  \"skills\": [\n    \"Node.js\",\n    \"NestJS\",\n    \"PostgreSQL\",\n    \"TypeScript\",\n    \"AWS\"\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/candidates/{{candidateId}}",
@@ -1522,7 +1523,8 @@
                 "candidates",
                 "{{candidateId}}"
               ]
-            }
+            },
+            "description": "Update candidate profile details including location, experience, company, designation, status, and resumeUrl."
           }
         },
         {

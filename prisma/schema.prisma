@@ -156,6 +156,14 @@ model Candidate {
   email            String    @db.VarChar(255)
   phone            String?   @db.VarChar(50)
   skills           String[]  @default([])
+  currentLocation  String?   @map("current_location") @db.VarChar(255)
+  totalExperience  Decimal?  @map("total_experience") @db.Decimal(4, 1)
+  currentCompany   String?   @map("current_company") @db.VarChar(255)
+  currentDesignation String? @map("current_designation") @db.VarChar(255)
+  linkedinUrl      String?   @map("linkedin_url") @db.VarChar(500)
+  source           String    @default("LinkedIn") @db.VarChar(50)
+  candidateStatus  String    @default("NEW") @map("candidate_status") @db.VarChar(50)
+  resumeUrl        String?   @map("resume_url") @db.VarChar(1000)
   ownerId          String    @map("owner_id") @db.Uuid
   createdById      String?   @map("created_by_id") @db.Uuid
   lastModifiedById String?   @map("last_modified_by_id") @db.Uuid

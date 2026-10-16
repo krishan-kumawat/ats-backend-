@@ -16,12 +16,23 @@ export class CandidatesService {
   }
 
   async create(createCandidateDto, ownerId) {
-    return this.candidatesRepository.create({
-      ...createCandidateDto,
+    const { jobId, ...candidateData } = createCandidateDto;
+
+    const job = await this.candidatesRepository.findJobById(jobId);
+    if (!job) {
+      throw new NotFoundException(`Job with ID '${jobId}' not found`);
+    }
+
+    const candidate = await this.candidatesRepository.create({
+      ...candidateData,
       ownerId,
       createdById: ownerId,
       lastModifiedById: ownerId,
     });
+
+    await this.linkToJob(candidate.id, jobId, 'Applied', ownerId);
+
+    return this.findOne(candidate.id);
   }
 
   async findAll(userId) {

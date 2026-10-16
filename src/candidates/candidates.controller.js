@@ -9,6 +9,7 @@ import {
   UseGuards,
   Req,
   Dependencies,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { CandidatesService } from './candidates.service.js';
@@ -35,7 +36,11 @@ export class CandidatesController {
   @CheckOls('Candidate', 'CREATE')
   @ApiOperation({ summary: 'Create a new candidate profile' })
   @ApiResponse({ status: 201, description: 'Candidate profile successfully created.' })
-  create(@Body() createCandidateDto, @Req() request) {
+  create(
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: CreateCandidateDto }))
+    createCandidateDto,
+    @Req() request
+  ) {
     return this.candidatesService.create(createCandidateDto, request.user.sub);
   }
 
@@ -65,7 +70,12 @@ export class CandidatesController {
   @ApiResponse({ status: 200, description: 'Candidate updated.' })
   @ApiResponse({ status: 403, description: 'Forbidden. No edit access.' })
   @ApiResponse({ status: 404, description: 'Candidate not found.' })
-  update(@Param('id') id, @Body() updateCandidateDto, @Req() request) {
+  update(
+    @Param('id') id,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: UpdateCandidateDto }))
+    updateCandidateDto,
+    @Req() request
+  ) {
     return this.candidatesService.update(id, updateCandidateDto, request.user.sub);
   }
 
@@ -87,7 +97,12 @@ export class CandidatesController {
   @ApiResponse({ status: 201, description: 'Candidate linked to job successfully.' })
   @ApiResponse({ status: 403, description: 'Forbidden. No edit access.' })
   @ApiResponse({ status: 404, description: 'Candidate or Job not found.' })
-  linkToJob(@Param('id') id, @Body() assignJobDto, @Req() request) {
+  linkToJob(
+    @Param('id') id,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: AssignJobDto }))
+    assignJobDto,
+    @Req() request
+  ) {
     return this.candidatesService.linkToJob(id, assignJobDto.jobId, assignJobDto.status, request.user.sub);
   }
 
@@ -101,7 +116,8 @@ export class CandidatesController {
   updateJobLink(
     @Param('id') id,
     @Param('jobId') jobId,
-    @Body() updateJobLinkDto,
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: UpdateJobLinkDto }))
+    updateJobLinkDto,
     @Req() request,
   ) {
     return this.candidatesService.updateJobLink(id, jobId, updateJobLinkDto, request.user.sub);

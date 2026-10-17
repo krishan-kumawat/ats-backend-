@@ -47,6 +47,22 @@ async function bootstrap() {
   SwaggerModule.setup('api-docs', app, document);
 
 
+  // Auto-seed schema objects and initial data if database is empty
+  try {
+    const { DataSource } = await import('typeorm');
+    const dataSource = app.get(DataSource);
+    const countRes = await dataSource.query(`SELECT COUNT(*) FROM "schema_objects";`);
+    const count = parseInt(countRes[0]?.count || '0', 10);
+    if (count === 0) {
+      console.log('Database empty. Automatically running seed scripts...');
+      const { execSync } = await import('child_process');
+      execSync('node prisma/seed-schema-fields.js && node prisma/seed.js', { stdio: 'inherit' });
+      console.log('Automatic database seeding complete.');
+    }
+  } catch (err) {
+    console.warn('Auto-seed check notice:', err.message);
+  }
+
   const port = process.env.PORT ?? 3000;
   await app.listen(port, '0.0.0.0');
   console.log(`Application is running on: http://localhost:${port}/api/v1`);

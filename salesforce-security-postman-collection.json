@@ -1,0 +1,479 @@
+{
+  "info": {
+    "_postman_id": "7ac156f7-b4d2-4328-98e3-85f921074e64",
+    "name": "Salesforce-Grade Security API",
+    "description": "Collection to test the OLS, FLS, Profile cloning, and Record sharing endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "User Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken) {",
+                  "    pm.environment.set(\"accessToken\", jsonData.accessToken);",
+                  "    pm.collectionVariables.set(\"accessToken\", jsonData.accessToken);",
+                  "}",
+                  "if (jsonData.refreshToken) {",
+                  "    pm.environment.set(\"refreshToken\", jsonData.refreshToken);",
+                  "    pm.collectionVariables.set(\"refreshToken\", jsonData.refreshToken);",
+                  "}",
+                  "console.log(\"Tokens saved to Postman environment and collection variables!\");"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ceo@sf.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Profiles & Permissions",
+      "item": [
+        {
+          "name": "List All Profiles",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile Detail",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "PROFILE_UUID_HERE"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Custom Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom Recruitment Lead\",\n  \"description\": \"Has specialized custom permissions cloned from ATS Recruiter template.\",\n  \"sourceProfileName\": \"ATS Recruiter\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles"
+              ]
+            },
+            "description": "Create a new custom profile derived from a source template profile. Accepts optional `sourceProfileName` (e.g. \"ATS Recruiter\") or `sourceProfileId` (UUID) to clone Base Permission Set, OLS, FLS, System Permissions, and Tab Settings."
+          },
+          "response": []
+        },
+        {
+          "name": "Clone Security Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cloned Standard User Profile\",\n  \"description\": \"Custom copy of Standard User baseline permissions.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/:id/clone",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                ":id",
+                "clone"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SOURCE_PROFILE_UUID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Custom Recruitment Profile\",\n  \"description\": \"Modified description for the recruitment baseline profile.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CUSTOM_PROFILE_UUID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Custom Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CUSTOM_PROFILE_UUID"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Save Profile Permissions (OLS/FLS/System)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionIds\": [\n    \"recruitment:job:read\",\n    \"recruitment:job:create\",\n    \"recruitment:candidate:read\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/:id/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                ":id",
+                "permissions"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "PROFILE_UUID_HERE"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Record Sharing",
+      "item": [
+        {
+          "name": "Get Record Collaborators",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sharing/collaborators?recordId=ACCOUNT_OR_RECORD_UUID&objectType=Account",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sharing",
+                "collaborators"
+              ],
+              "query": [
+                {
+                  "key": "recordId",
+                  "value": "ACCOUNT_OR_RECORD_UUID"
+                },
+                {
+                  "key": "objectType",
+                  "value": "Account"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Manual Share",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recordId\": \"ACCOUNT_RECORD_UUID\",\n  \"objectType\": \"Account\",\n  \"targetUserId\": \"TARGET_USER_UUID\",\n  \"accessLevel\": \"EDIT\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sharing/share",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sharing",
+                "share"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Revoke Manual Share",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sharing/share?recordId=ACCOUNT_RECORD_UUID&objectType=Account&targetUserId=TARGET_USER_UUID",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sharing",
+                "share"
+              ],
+              "query": [
+                {
+                  "key": "recordId",
+                  "value": "ACCOUNT_RECORD_UUID"
+                },
+                {
+                  "key": "objectType",
+                  "value": "Account"
+                },
+                {
+                  "key": "targetUserId",
+                  "value": "TARGET_USER_UUID"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    }
+  ]
+}

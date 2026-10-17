@@ -1,0 +1,1898 @@
+{
+  "info": {
+    "_postman_id": "b8e9c2d1-7f4a-4a1e-8932-9c3f1b4d5678",
+    "name": "ATS Backend - Complete API Collection",
+    "description": "Comprehensive Postman collection for all ATS Backend APIs including Authentication, Users & Setup, Profiles, Roles, Permission Sets, Permissions, Sharing & Security, Jobs, Candidates, Departments, Navigation, Audit Logs, and App Health. Includes automated token capture and variable chaining test scripts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "1.1 Login - Admin (Captures Tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken && jsonData.refreshToken) {",
+                  "    pm.collectionVariables.set(\"accessToken\", jsonData.accessToken);",
+                  "    pm.collectionVariables.set(\"refreshToken\", jsonData.refreshToken);",
+                  "    pm.environment.set(\"accessToken\", jsonData.accessToken);",
+                  "    pm.environment.set(\"refreshToken\", jsonData.refreshToken);",
+                  "    if (jsonData.user && jsonData.user.id) {",
+                  "        pm.collectionVariables.set(\"currentUserId\", jsonData.user.id);",
+                  "    }",
+                  "    console.log(\"✅ Tokens successfully captured for Admin!\");",
+                  "} else {",
+                  "    console.error(\"❌ Failed to extract tokens from login response.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"amit.sharma@ats.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "1.2 Login - Recruiter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken && jsonData.refreshToken) {",
+                  "    pm.collectionVariables.set(\"accessToken\", jsonData.accessToken);",
+                  "    pm.collectionVariables.set(\"refreshToken\", jsonData.refreshToken);",
+                  "    pm.environment.set(\"accessToken\", jsonData.accessToken);",
+                  "    pm.environment.set(\"refreshToken\", jsonData.refreshToken);",
+                  "    console.log(\"✅ Tokens captured for Recruiter\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"priya.verma@ats.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "1.3 Refresh Token (Rotates Tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.accessToken && jsonData.refreshToken) {",
+                  "    pm.collectionVariables.set(\"accessToken\", jsonData.accessToken);",
+                  "    pm.collectionVariables.set(\"refreshToken\", jsonData.refreshToken);",
+                  "    pm.environment.set(\"accessToken\", jsonData.accessToken);",
+                  "    pm.environment.set(\"refreshToken\", jsonData.refreshToken);",
+                  "    console.log(\"🔄 Tokens rotated successfully!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "1.4 Logout (Invalidates Tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.unset(\"accessToken\");",
+                  "pm.collectionVariables.unset(\"refreshToken\");",
+                  "pm.environment.unset(\"accessToken\");",
+                  "pm.environment.unset(\"refreshToken\");",
+                  "console.log(\"🚪 User logged out & tokens cleared\");"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Users & Setup Console",
+      "item": [
+        {
+          "name": "2.1 List All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.2 Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"userId\", jsonData.id);",
+                  "    console.log(\"Saved userId:\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"vikram.rathore@ats.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"Vikram\",\n  \"lastName\": \"Rathore\",\n  \"profileId\": \"{{profileId}}\",\n  \"roleId\": \"{{roleId}}\",\n  \"departmentId\": \"{{departmentId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.3 Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.4 Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Vikram Updated\",\n  \"lastName\": \"Rathore\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.5 Assign Permission Sets to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionSetIds\": [\n    \"{{permissionSetId}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/permission-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "permission-sets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.6 Delete User (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.7 Setup Console - Get User Security Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/setup/users/{{userId}}/details",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "setup",
+                "users",
+                "{{userId}}",
+                "details"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.8 Setup Console - Update User Public Groups",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"groupIds\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/setup/users/{{userId}}/groups",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "setup",
+                "users",
+                "{{userId}}",
+                "groups"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Profiles",
+      "item": [
+        {
+          "name": "3.1 List All Profiles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (Array.isArray(jsonData) && jsonData.length > 0) {",
+                  "    pm.collectionVariables.set(\"profileId\", jsonData[0].id);",
+                  "    console.log(\"Saved profileId:\", jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.2 Create Profile (From Template Source Profile)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"profileId\", jsonData.id);",
+                  "    console.log(\"✅ Profile created and ID captured: \" + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom HR Profile\",\n  \"description\": \"Custom profile derived from ATS Recruiter template\",\n  \"sourceProfileName\": \"ATS Recruiter\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles"
+              ]
+            },
+            "description": "Creates a new custom profile derived from an existing source template. Supports `sourceProfileName` (e.g. \"ATS Recruiter\") or `sourceProfileId` (UUID). Automatically clones the source profile's Base Permission Set, Object-Level Security (OLS), Field-Level Security (FLS), System Permissions, and Tab Visibility Settings. Returns the created profile with its `id` for subsequent security configuration."
+          }
+        },
+        {
+          "name": "3.2b Create Profile (By Source Profile ID)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"profileId\", jsonData.id);",
+                  "    console.log(\"✅ Profile created via sourceProfileId: \" + jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom Manager Profile\",\n  \"description\": \"Custom profile cloned by template UUID\",\n  \"sourceProfileId\": \"{{profileId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles"
+              ]
+            },
+            "description": "Alternative creation request demonstrating the use of `sourceProfileId` UUID instead of `sourceProfileName`."
+          }
+        },
+        {
+          "name": "3.3 Get Profile by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/{{profileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "{{profileId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.4 Update Profile Details",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Custom HR Profile Updated\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/{{profileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "{{profileId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.5 Clone Profile (With OLS/FLS/System Perms)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cloned ATS Recruiter Profile\",\n  \"description\": \"Cloned from existing profile\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/{{profileId}}/clone",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "{{profileId}}",
+                "clone"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.6 Get Profile Security Settings (OLS, FLS, System)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/{{profileId}}/security-settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "{{profileId}}",
+                "security-settings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.7 Update Profile Security Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"systemPermissions\": {\n    \"viewAllData\": true,\n    \"modifyAllData\": false,\n    \"manageUsers\": true\n  },\n  \"objectPermissions\": [\n    {\n      \"objectApiName\": \"Job\",\n      \"allowCreate\": true,\n      \"allowRead\": true,\n      \"allowEdit\": true,\n      \"allowDelete\": false,\n      \"viewAllData\": true,\n      \"modifyAllData\": false\n    }\n  ],\n  \"fieldPermissions\": [\n    {\n      \"objectApiName\": \"Job\",\n      \"fieldApiName\": \"budget\",\n      \"allowRead\": true,\n      \"allowEdit\": false\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/{{profileId}}/security-settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "{{profileId}}",
+                "security-settings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.8 Assign Atomic Permissions to Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionIds\": [\n    \"{{permissionId}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profiles/{{profileId}}/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "{{profileId}}",
+                "permissions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3.9 Delete Profile (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/profiles/{{profileId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profiles",
+                "{{profileId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Roles & Hierarchy",
+      "item": [
+        {
+          "name": "4.1 List All Roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (Array.isArray(jsonData) && jsonData.length > 0) {",
+                  "    pm.collectionVariables.set(\"roleId\", jsonData[0].id);",
+                  "    console.log(\"Saved roleId:\", jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.2 Create Role",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"roleId\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lead Technical Recruiter\",\n  \"parentId\": \"{{roleId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.3 Get Role by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.4 Update Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Lead Technical Recruiter Updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4.5 Delete Role (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles",
+                "{{roleId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Permission Sets",
+      "item": [
+        {
+          "name": "5.1 List All Permission Sets",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (Array.isArray(jsonData) && jsonData.length > 0) {",
+                  "    pm.collectionVariables.set(\"permissionSetId\", jsonData[0].id);",
+                  "    console.log(\"Saved permissionSetId:\", jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/permission-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permission-sets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.2 Create Permission Set",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"permissionSetId\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Offer Management Access\",\n  \"description\": \"Grants access to candidate offer letters and salaries\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/permission-sets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permission-sets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.3 Get Permission Set by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/permission-sets/{{permissionSetId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permission-sets",
+                "{{permissionSetId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.4 Update Permission Set",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Offer Management Access Updated\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/permission-sets/{{permissionSetId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permission-sets",
+                "{{permissionSetId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.5 Assign Permissions to Permission Set",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionIds\": [\n    \"{{permissionId}}\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/permission-sets/{{permissionSetId}}/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permission-sets",
+                "{{permissionSetId}}",
+                "permissions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5.6 Delete Permission Set (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/permission-sets/{{permissionSetId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permission-sets",
+                "{{permissionSetId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Permissions & Metadata",
+      "item": [
+        {
+          "name": "6.1 List All Permission Codes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (Array.isArray(jsonData) && jsonData.length > 0) {",
+                  "    pm.collectionVariables.set(\"permissionId\", jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permissions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6.2 Create Permission Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"module\": \"Recruitment\",\n  \"resource\": \"Job\",\n  \"action\": \"Export\",\n  \"code\": \"recruitment:job:export\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/permissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permissions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6.3 Get Permission by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/permissions/{{permissionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "permissions",
+                "{{permissionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6.4 Get Object Metadata, OLS & FLS (Job)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/metadata/Job",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "metadata",
+                "Job"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6.5 Get Object Metadata, OLS & FLS (Candidate)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/metadata/Candidate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "metadata",
+                "Candidate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Sharing & Record Security",
+      "item": [
+        {
+          "name": "7.1 Get Collaborators for Record",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sharing/collaborators?recordId={{jobId}}&objectType=Job",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sharing",
+                "collaborators"
+              ],
+              "query": [
+                {
+                  "key": "recordId",
+                  "value": "{{jobId}}"
+                },
+                {
+                  "key": "objectType",
+                  "value": "Job"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "7.2 Manually Share Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recordId\": \"{{jobId}}\",\n  \"objectType\": \"Job\",\n  \"targetUserId\": \"{{userId}}\",\n  \"accessLevel\": \"EDIT\",\n  \"cascadeToChildren\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sharing/share",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sharing",
+                "share"
+              ]
+            }
+          }
+        },
+        {
+          "name": "7.3 Revoke Manual Record Share",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sharing/share?recordId={{jobId}}&objectType=Job&targetUserId={{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sharing",
+                "share"
+              ],
+              "query": [
+                {
+                  "key": "recordId",
+                  "value": "{{jobId}}"
+                },
+                {
+                  "key": "objectType",
+                  "value": "Job"
+                },
+                {
+                  "key": "targetUserId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "7.4 Calculate Dynamic Record-Level Access",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sharing/record-access?recordId={{jobId}}&objectType=Job",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sharing",
+                "record-access"
+              ],
+              "query": [
+                {
+                  "key": "recordId",
+                  "value": "{{jobId}}"
+                },
+                {
+                  "key": "objectType",
+                  "value": "Job"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "7.5 Get Org-Wide Defaults (OWD)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (Array.isArray(jsonData) && jsonData.length > 0) {",
+                  "    pm.collectionVariables.set(\"schemaObjectId\", jsonData[0].schemaObjectId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sharing/owd",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sharing",
+                "owd"
+              ]
+            }
+          }
+        },
+        {
+          "name": "7.6 Update Org-Wide Default (OWD)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"schemaObjectId\": \"{{schemaObjectId}}\",\n  \"defaultAccessLevel\": \"PRIVATE\",\n  \"grantAccessUsingHierarchies\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sharing/owd",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sharing",
+                "owd"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Jobs",
+      "item": [
+        {
+          "name": "8.1 List All Jobs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (Array.isArray(jsonData) && jsonData.length > 0) {",
+                  "    pm.collectionVariables.set(\"jobId\", jsonData[0].id);",
+                  "    console.log(\"Saved jobId:\", jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jobs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "8.2 Create Job",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"jobId\", jsonData.id);",
+                  "    console.log(\"Created new jobId:\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Full Stack Engineer\",\n  \"description\": \"Looking for a Senior Engineer with NestJS, React, and PostgreSQL experience.\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"budgetLimit\": 160000,\n  \"workMode\": \"Hybrid\",\n  \"salaryMin\": 120000,\n  \"salaryMax\": 160000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jobs"
+              ]
+            },
+            "description": "Create a new job posting with title, description, department, budgetLimit, workMode (On-site, Remote, Hybrid), salaryMin, and salaryMax."
+          }
+        },
+        {
+          "name": "8.3 Get Job by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jobs",
+                "{{jobId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "8.4 Update Job Details",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Lead Full Stack Engineer\",\n  \"workMode\": \"Remote\",\n  \"salaryMin\": 130000,\n  \"salaryMax\": 175000,\n  \"status\": \"Open\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jobs",
+                "{{jobId}}"
+              ]
+            },
+            "description": "Update existing job details including workMode, salaryMin, salaryMax, status, title, description, or budgetLimit."
+          }
+        },
+        {
+          "name": "8.5 Delete Job (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "jobs",
+                "{{jobId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Candidates",
+      "item": [
+        {
+          "name": "9.1 List All Candidates",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (Array.isArray(jsonData) && jsonData.length > 0) {",
+                  "    pm.collectionVariables.set(\"candidateId\", jsonData[0].id);",
+                  "    console.log(\"Saved candidateId:\", jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/candidates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidates"
+              ]
+            }
+          }
+        },
+        {
+          "name": "9.2 Create Candidate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"candidateId\", jsonData.id);",
+                  "    console.log(\"Created candidateId:\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": \"{{jobId}}\",\n  \"firstName\": \"Ananya\",\n  \"lastName\": \"Iyer\",\n  \"email\": \"ananya.iyer@example.com\",\n  \"phone\": \"+919876543210\",\n  \"currentLocation\": \"Bengaluru, India\",\n  \"totalExperience\": 5.5,\n  \"currentCompany\": \"Acme Tech Solutions\",\n  \"currentDesignation\": \"Senior Software Engineer\",\n  \"linkedinUrl\": \"https://linkedin.com/in/ananyaiyer\",\n  \"source\": \"LinkedIn\",\n  \"candidateStatus\": \"NEW\",\n  \"resumeUrl\": \"https://storage.example.com/resumes/ananya-iyer.pdf\",\n  \"skills\": [\n    \"Node.js\",\n    \"NestJS\",\n    \"PostgreSQL\",\n    \"TypeScript\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidates",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidates"
+              ]
+            },
+            "description": "Create a new candidate profile with required jobId, personal details, location, experience, company, designation, linkedinUrl, source, candidateStatus, and resumeUrl."
+          }
+        },
+        {
+          "name": "9.3 Get Candidate by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/candidates/{{candidateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidates",
+                "{{candidateId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "9.4 Update Candidate Details",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Ananya\",\n  \"lastName\": \"Iyer Sharma\",\n  \"currentLocation\": \"Bengaluru, India\",\n  \"totalExperience\": 6,\n  \"currentCompany\": \"Global Cloud Corp\",\n  \"currentDesignation\": \"Lead Engineer\",\n  \"linkedinUrl\": \"https://linkedin.com/in/ananyaiyer\",\n  \"source\": \"LinkedIn\",\n  \"candidateStatus\": \"ACTIVE\",\n  \"resumeUrl\": \"https://storage.example.com/resumes/ananya-iyer-v2.pdf\",\n  \"skills\": [\n    \"Node.js\",\n    \"NestJS\",\n    \"PostgreSQL\",\n    \"TypeScript\",\n    \"AWS\"\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidates/{{candidateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidates",
+                "{{candidateId}}"
+              ]
+            },
+            "description": "Update candidate profile details including location, experience, company, designation, status, and resumeUrl."
+          }
+        },
+        {
+          "name": "9.5 Link Candidate to Job Opening",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobId\": \"{{jobId}}\",\n  \"status\": \"Applied\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidates/{{candidateId}}/jobs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidates",
+                "{{candidateId}}",
+                "jobs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "9.6 Update Candidate Job Application Link (Scores, Status, Offer)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Interviewing\",\n  \"expectedSalary\": 140000,\n  \"proposedSalary\": 150000,\n  \"proposedEquity\": 0.05,\n  \"sourceTag\": \"Employee Referral\",\n  \"technicalScore\": 5,\n  \"systemScore\": 4,\n  \"cultureScore\": 5,\n  \"pros\": \"Strong problem solver, excellent system design knowledge\",\n  \"cons\": \"None identified\",\n  \"recommendation\": \"STRONG_HIRE\",\n  \"approvalStatus\": \"PENDING\",\n  \"approvalFeedback\": \"Recommended for Senior position\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidates/{{candidateId}}/jobs/{{jobId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidates",
+                "{{candidateId}}",
+                "jobs",
+                "{{jobId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "9.7 Delete Candidate (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/candidates/{{candidateId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidates",
+                "{{candidateId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Departments",
+      "item": [
+        {
+          "name": "10.1 List All Departments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (Array.isArray(jsonData) && jsonData.length > 0) {",
+                  "    pm.collectionVariables.set(\"departmentId\", jsonData[0].id);",
+                  "    console.log(\"Saved departmentId:\", jsonData[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/departments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "10.2 Create Department",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData && jsonData.id) {",
+                  "    pm.collectionVariables.set(\"departmentId\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Product Engineering\",\n  \"parentId\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/departments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "10.3 Get Department by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/departments/{{departmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments",
+                "{{departmentId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "10.4 Update Department",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Product & Core Engineering\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/departments/{{departmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments",
+                "{{departmentId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "10.5 Delete Department (Soft Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/departments/{{departmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments",
+                "{{departmentId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Navigation & Tabs",
+      "item": [
+        {
+          "name": "11.1 Get Navigation Tabs for Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/navigation/tabs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "navigation",
+                "tabs"
+              ]
+            }
+          }
+        },
+        {
+          "name": "11.2 Update Tab Settings for Permission Set",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permissionSetId\": \"{{permissionSetId}}\",\n  \"schemaObjectId\": \"{{schemaObjectId}}\",\n  \"isVisible\": true,\n  \"precedenceOrder\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/tab-settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "admin",
+                "tab-settings"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Audit Logs",
+      "item": [
+        {
+          "name": "12.1 Retrieve All Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit-logs"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. App Health",
+      "item": [
+        {
+          "name": "13.1 Root Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": []
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3008/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "currentUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "profileId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "roleId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "permissionSetId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "permissionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "departmentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "jobId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "candidateId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "schemaObjectId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

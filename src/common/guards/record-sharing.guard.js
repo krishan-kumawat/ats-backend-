@@ -3,14 +3,19 @@ import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { RECORD_ACCESS_KEY } from '../decorators/record-access.decorator.js';
 import { PermissionsService } from '../../permissions/permissions.service.js';
+import { getEntityManagerToken } from '@nestjs/typeorm';
+import { OrgWideDefault } from '../../entities/org-wide-default.entity.js';
+import { User } from '../../entities/user.entity.js';
+import { Role } from '../../entities/role.entity.js';
 
 @Injectable()
-@Dependencies(Reflector, PrismaService, PermissionsService)
+@Dependencies(Reflector, PrismaService, PermissionsService, getEntityManagerToken())
 export class RecordSharingGuard {
-  constructor(reflector, prismaService, permissionsService) {
+  constructor(reflector, prismaService, permissionsService, entityManager) {
     this.reflector = reflector;
     this.prismaService = prismaService;
     this.permissionsService = permissionsService;
+    this.entityManager = entityManager;
   }
 
   async canActivate(context) {
@@ -47,13 +52,32 @@ export class RecordSharingGuard {
       return true;
     }
 
-    // 2. Record Owner check
-    const isOwner = await this.checkRecordOwnership(user.sub, resourceType, recordId);
-    if (isOwner) {
+    // 2. Org-Wide Default (OWD) check
+    const owd = await this.getOwd(resourceType);
+    if (owd) {
+      if (owd.defaultAccessLevel === 'READ_WRITE') {
+        return true;
+      }
+      if (owd.defaultAccessLevel === 'READ_ONLY' && accessLevel === 'READ') {
+        return true;
+      }
+    }
+
+    // 3. Record Owner check
+    const ownerId = await this.getRecordOwnerId(resourceType, recordId);
+    if (ownerId && ownerId === user.sub) {
       return true;
     }
 
-    // 3. Shared access check (Direct/Inherited via user_resource_access)
+    // 4. Role Hierarchy check (Manager above owner in hierarchy inherits access)
+    if (ownerId && owd?.grantAccessUsingHierarchies !== false) {
+      const isManager = await this.checkRoleHierarchy(user.sub, ownerId);
+      if (isManager) {
+        return true;
+      }
+    }
+
+    // 5. Shared access check (Direct/Inherited via user_resource_access)
     const hasSharedAccess = await this.checkSharedAccess(
       user.sub,
       resourceType,
@@ -64,18 +88,30 @@ export class RecordSharingGuard {
       return true;
     }
 
-    // 4. Deny access
+    // 6. Deny access
     throw new ForbiddenException(`You do not have ${accessLevel} access to this ${resourceType} record`);
   }
 
-  async checkRecordOwnership(userId, resourceType, recordId) {
+  async getOwd(resourceType) {
+    try {
+      return await this.entityManager.findOne(OrgWideDefault, {
+        where: { schemaObject: { apiName: resourceType } },
+        relations: { schemaObject: true },
+      });
+    } catch (error) {
+      console.error(`Error querying OWD for ${resourceType}:`, error);
+      return null;
+    }
+  }
+
+  async getRecordOwnerId(resourceType, recordId) {
     try {
       if (resourceType === 'Job') {
         const record = await this.prismaService.job.findUnique({
           where: { id: recordId, deletedAt: null },
           select: { ownerId: true },
         });
-        return record?.ownerId === userId;
+        return record?.ownerId;
       }
 
       if (resourceType === 'Candidate') {
@@ -83,10 +119,38 @@ export class RecordSharingGuard {
           where: { id: recordId, deletedAt: null },
           select: { ownerId: true },
         });
-        return record?.ownerId === userId;
+        return record?.ownerId;
       }
     } catch (error) {
       console.error(`Error checking record ownership for ${resourceType}:`, error);
+    }
+    return null;
+  }
+
+  async checkRoleHierarchy(viewerUserId, ownerUserId) {
+    if (!ownerUserId || viewerUserId === ownerUserId) return false;
+    try {
+      const viewer = await this.entityManager.findOne(User, { where: { id: viewerUserId } });
+      const owner = await this.entityManager.findOne(User, { where: { id: ownerUserId } });
+      if (!viewer?.roleId || !owner?.roleId) return false;
+
+      let currentRoleId = owner.roleId;
+      while (currentRoleId) {
+        const role = await this.entityManager.findOne(Role, {
+          where: { id: currentRoleId },
+          select: { id: true, parentId: true },
+        });
+        if (role && role.parentId) {
+          if (role.parentId === viewer.roleId) {
+            return true;
+          }
+          currentRoleId = role.parentId;
+        } else {
+          break;
+        }
+      }
+    } catch (err) {
+      console.error('Error checking role hierarchy in RecordSharingGuard:', err);
     }
     return false;
   }

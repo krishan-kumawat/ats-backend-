@@ -1,35 +1,67 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService {
-  constructor() {
-    this.client = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-    });
+  logger = new Logger(RedisService.name);
+  client = null;
 
-    this.client.on('error', (err) => {
-      console.error('[Redis] Connection error:', err);
-    });
+  constructor() {
+    const redisHost = process.env.REDIS_HOST;
+    if (!redisHost) {
+      this.logger.log('REDIS_HOST not configured. Running without external Redis caching.');
+      return;
+    }
+
+    try {
+      this.client = new Redis({
+        host: redisHost,
+        port: parseInt(process.env.REDIS_PORT || '6379', 10),
+        lazyConnect: true,
+      });
+
+      this.client.on('error', (err) => {
+        this.logger.warn(`[Redis] Connection warning: ${err.message}`);
+      });
+    } catch (err) {
+      this.logger.warn(`[Redis] Failed to initialize Redis client: ${err.message}`);
+      this.client = null;
+    }
   }
 
   async get(key) {
-    return this.client.get(key);
+    if (!this.client) return null;
+    try {
+      return await this.client.get(key);
+    } catch {
+      return null;
+    }
   }
 
   async set(key, value, ttlSeconds) {
-    if (ttlSeconds) {
-      return this.client.set(key, value, 'EX', ttlSeconds);
+    if (!this.client) return null;
+    try {
+      if (ttlSeconds) {
+        return await this.client.set(key, value, 'EX', ttlSeconds);
+      }
+      return await this.client.set(key, value);
+    } catch {
+      return null;
     }
-    return this.client.set(key, value);
   }
 
   async del(key) {
-    return this.client.del(key);
+    if (!this.client) return null;
+    try {
+      return await this.client.del(key);
+    } catch {
+      return null;
+    }
   }
 
   onModuleDestroy() {
-    this.client.disconnect();
+    if (this.client) {
+      this.client.disconnect();
+    }
   }
 }

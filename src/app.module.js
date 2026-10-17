@@ -52,6 +52,9 @@ import { NavigationModule } from './navigation/navigation.module.js';
       password: process.env.DB_PASSWORD || 'root',
       database: process.env.DB_NAME || 'postgres',
       url: process.env.DATABASE_URL || process.env.LOCAL_DATABASE_URL,
+      ssl: (process.env.DATABASE_URL && process.env.DATABASE_URL.includes('sslmode=require')) || process.env.NODE_ENV === 'production'
+        ? { rejectUnauthorized: false }
+        : false,
       entities: [
         User,
         Role,

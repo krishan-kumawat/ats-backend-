@@ -15,7 +15,11 @@ const uuid = () => crypto.randomUUID();
 
 async function main() {
   console.log('Connecting to database...');
-  const client = new Client({ connectionString: dbUrl });
+  const isSsl = dbUrl.includes('sslmode=require') || process.env.NODE_ENV === 'production';
+  const client = new Client({
+    connectionString: dbUrl,
+    ssl: isSsl ? { rejectUnauthorized: false } : undefined,
+  });
   await client.connect();
 
 

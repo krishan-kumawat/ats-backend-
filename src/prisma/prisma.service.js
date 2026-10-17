@@ -10,7 +10,11 @@ export class PrismaService extends PrismaClient {
       process.env.DATABASE_URL ||
       process.env.LOCAL_DATABASE_URL ||
       `postgresql://${process.env.DB_USERNAME || process.env.DB_USER || 'postgres'}:${encodeURIComponent(process.env.DB_PASSWORD || 'root')}@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}/${encodeURIComponent(process.env.DB_NAME || 'TV ATS')}`;
-    const pool = new Pool({ connectionString });
+    const isSsl = connectionString.includes('sslmode=require') || process.env.NODE_ENV === 'production';
+    const pool = new Pool({
+      connectionString,
+      ssl: isSsl ? { rejectUnauthorized: false } : undefined,
+    });
     const adapter = new PrismaPg(pool);
     super({ adapter });
     this.$pool = pool;

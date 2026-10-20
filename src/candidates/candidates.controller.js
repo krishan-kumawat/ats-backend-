@@ -10,8 +10,11 @@ import {
   Req,
   Dependencies,
   ValidationPipe,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CandidatesService } from './candidates.service.js';
 import { CreateCandidateDto, UpdateCandidateDto } from './dto/create-candidate.dto.js';
 import { AssignJobDto } from './dto/assign-job.dto.js';
@@ -33,15 +36,18 @@ export class CandidatesController {
   }
 
   @Post()
+  @UseInterceptors(FileInterceptor('resume', { limits: { fileSize: 5 * 1024 * 1024 } }))
+  @ApiConsumes('application/json', 'multipart/form-data')
   @CheckOls('Candidate', 'CREATE')
-  @ApiOperation({ summary: 'Create a new candidate profile' })
+  @ApiOperation({ summary: 'Create a new candidate profile (supports JSON and multipart/form-data with resume file)' })
   @ApiResponse({ status: 201, description: 'Candidate profile successfully created.' })
   create(
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: CreateCandidateDto }))
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: CreateCandidateDto, transform: true }))
     createCandidateDto,
+    @UploadedFile() file,
     @Req() request
   ) {
-    return this.candidatesService.create(createCandidateDto, request.user.sub);
+    return this.candidatesService.create(createCandidateDto, request.user.sub, file);
   }
 
   @Get()
@@ -64,19 +70,22 @@ export class CandidatesController {
   }
 
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('resume', { limits: { fileSize: 5 * 1024 * 1024 } }))
+  @ApiConsumes('application/json', 'multipart/form-data')
   @CheckOls('Candidate', 'EDIT')
   @RequireRecordAccess('Candidate', 'EDIT', 'id')
-  @ApiOperation({ summary: 'Update candidate profile details' })
+  @ApiOperation({ summary: 'Update candidate profile details (supports JSON and multipart/form-data with new resume file)' })
   @ApiResponse({ status: 200, description: 'Candidate updated.' })
   @ApiResponse({ status: 403, description: 'Forbidden. No edit access.' })
   @ApiResponse({ status: 404, description: 'Candidate not found.' })
   update(
     @Param('id') id,
-    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: UpdateCandidateDto }))
+    @Body(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, expectedType: UpdateCandidateDto, transform: true }))
     updateCandidateDto,
+    @UploadedFile() file,
     @Req() request
   ) {
-    return this.candidatesService.update(id, updateCandidateDto, request.user.sub);
+    return this.candidatesService.update(id, updateCandidateDto, request.user.sub, file);
   }
 
   @Delete(':id')

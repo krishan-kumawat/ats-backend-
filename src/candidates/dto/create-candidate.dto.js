@@ -1,5 +1,5 @@
 import { IsString, IsEmail, IsNotEmpty, IsOptional, IsArray, IsUUID, IsNumber, Min, IsIn } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCandidateDto {
@@ -71,6 +71,17 @@ export class CreateCandidateDto {
   resumeUrl;
 
   @ApiProperty({ description: 'Array of candidate skills tags', type: [String], required: false })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        return value.split(',').map((s) => s.trim()).filter(Boolean);
+      }
+    }
+    return value;
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -141,6 +152,17 @@ export class UpdateCandidateDto {
   resumeUrl;
 
   @ApiProperty({ description: 'Array of candidate skills tags', type: [String], required: false })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        return value.split(',').map((s) => s.trim()).filter(Boolean);
+      }
+    }
+    return value;
+  })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

@@ -1480,7 +1480,7 @@
                 "candidates"
               ]
             },
-            "description": "Create a new candidate profile with required jobId, personal details, location, experience, company, designation, linkedinUrl, source, candidateStatus, and resumeUrl."
+            "description": "Create a new candidate profile. Supports application/json (with optional resumeUrl or Google Drive fileId) and multipart/form-data (with file field `resume` for .pdf, .doc, .docx up to 5MB). When uploaded, the backend stores the file in Google Drive and returns dynamic resumeUrl, resumePreviewUrl, resumeDownloadUrl, and resumeFileId."
           }
         },
         {
@@ -1524,7 +1524,7 @@
                 "{{candidateId}}"
               ]
             },
-            "description": "Update candidate profile details including location, experience, company, designation, status, and resumeUrl."
+            "description": "Update candidate profile details. Supports application/json or multipart/form-data with file field `resume` to upload/replace the resume file on Google Drive."
           }
         },
         {

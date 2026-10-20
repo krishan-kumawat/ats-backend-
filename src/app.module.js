@@ -37,6 +37,7 @@ import { CandidatesModule } from './candidates/candidates.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { DepartmentsModule } from './departments/departments.module.js';
 import { NavigationModule } from './navigation/navigation.module.js';
+import { GoogleDriveModule } from './google-drive/google-drive.module.js';
 
 
 @Module({
@@ -90,6 +91,7 @@ import { NavigationModule } from './navigation/navigation.module.js';
     AuditModule,
     DepartmentsModule,
     NavigationModule,
+    GoogleDriveModule,
   ],
   controllers: [AppController],
   providers: [AppService],

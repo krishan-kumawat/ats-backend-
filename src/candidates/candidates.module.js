@@ -3,9 +3,10 @@ import { CandidatesService } from './candidates.service.js';
 import { CandidatesController } from './candidates.controller.js';
 import { CandidatesRepository } from './candidates.repository.js';
 import { SharingModule } from '../sharing/sharing.module.js';
+import { GoogleDriveModule } from '../google-drive/google-drive.module.js';
 
 @Module({
-  imports: [SharingModule],
+  imports: [SharingModule, GoogleDriveModule],
   controllers: [CandidatesController],
   providers: [CandidatesService, CandidatesRepository],
   exports: [CandidatesService, CandidatesRepository],

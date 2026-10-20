@@ -4,23 +4,37 @@ import { SharingService } from '../sharing/sharing.service.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
 import { getEntityManagerToken } from '@nestjs/typeorm';
 import { OrgWideDefault } from '../entities/org-wide-default.entity.js';
+import { GoogleDriveService } from '../google-drive/google-drive.service.js';
 
 @Injectable()
-@Dependencies(CandidatesRepository, SharingService, PermissionsService, getEntityManagerToken())
+@Dependencies(CandidatesRepository, SharingService, PermissionsService, getEntityManagerToken(), GoogleDriveService)
 export class CandidatesService {
-  constructor(candidatesRepository, sharingService, permissionsService, entityManager) {
+  constructor(candidatesRepository, sharingService, permissionsService, entityManager, googleDriveService) {
     this.candidatesRepository = candidatesRepository;
     this.sharingService = sharingService;
     this.permissionsService = permissionsService;
     this.entityManager = entityManager;
+    this.googleDriveService = googleDriveService;
   }
 
-  async create(createCandidateDto, ownerId) {
+  async create(createCandidateDto, ownerId, file) {
     const { jobId, ...candidateData } = createCandidateDto;
 
     const job = await this.candidatesRepository.findJobById(jobId);
     if (!job) {
       throw new NotFoundException(`Job with ID '${jobId}' not found`);
+    }
+
+    if (file && file.buffer) {
+      const candidateName = `${createCandidateDto.firstName || ''} ${createCandidateDto.lastName || ''}`.trim();
+      const uploadResult = await this.googleDriveService.uploadResume({
+        buffer: file.buffer,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        candidateName,
+      });
+      candidateData.resumeUrl = uploadResult.fileId;
     }
 
     const candidate = await this.candidatesRepository.create({
@@ -56,8 +70,9 @@ export class CandidatesService {
     return Promise.all(
       candidates.map(async (cand) => {
         const access = await this.sharingService.getRecordAccess(cand.id, 'Candidate', userId);
+        const formatted = this.googleDriveService.formatCandidate(cand);
         return {
-          ...cand,
+          ...formatted,
           userRecordAccess: access,
         };
       })
@@ -69,15 +84,30 @@ export class CandidatesService {
     if (!candidate) {
       throw new NotFoundException(`Candidate with ID '${id}' not found`);
     }
-    return candidate;
+    return this.googleDriveService.formatCandidate(candidate);
   }
 
-  async update(id, updateCandidateDto, modifierId) {
-    await this.findOne(id);
-    return this.candidatesRepository.update(id, {
+  async update(id, updateCandidateDto, modifierId, file) {
+    const existing = await this.findOne(id);
+
+    if (file && file.buffer) {
+      const candidateName = `${updateCandidateDto.firstName || existing.firstName || ''} ${updateCandidateDto.lastName || existing.lastName || ''}`.trim();
+      const uploadResult = await this.googleDriveService.uploadResume({
+        buffer: file.buffer,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        candidateName,
+      });
+      updateCandidateDto.resumeUrl = uploadResult.fileId;
+    }
+
+    await this.candidatesRepository.update(id, {
       ...updateCandidateDto,
       lastModifiedById: modifierId,
     });
+
+    return this.findOne(id);
   }
 
   async remove(id) {

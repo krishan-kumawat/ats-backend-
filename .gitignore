@@ -41,6 +41,10 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
+*.pem
+*.key
+*service-account*.json
+*credentials*.json
 
 # temp directory
 .temp
